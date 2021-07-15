@@ -3,7 +3,7 @@ import sys
 import yaml
 import io
 
-from myfit import CircleModel, LineModelND, EllipseModel, PlaneModelND, BaseModel, HomographyModel, get_residuals
+from estimation.myfit import CircleModel, LineModelND, EllipseModel, PlaneModelND, BaseModel, HomographyModel, get_residuals
 
 def _get_estimation_error(params_original, params_estimated):
 	"""Computes absolute and relative error
@@ -301,8 +301,8 @@ if __name__ == '__main__':
 
 			if model_class == HomographyModel or model_class == EllipseModel:
 				theta_i, _ = compute_theta(params_original_i, params_estimated)
-				#RMSE_i = compute_RMSE(params_original_i, params_estimated, data, inliers)
-				#RMSE_values = np.append(RMSE_values, RMSE_i)
+				RMSE_i = compute_RMSE(params_original_i, params_estimated, data, inliers)
+				RMSE_values = np.append(RMSE_values, RMSE_i)
 				#euclidean_d_i = compute_eucliden_distance(params_original_i, params_estimated)
 			
 			theta_values = np.append(theta_values, theta_i)
@@ -329,7 +329,7 @@ if __name__ == '__main__':
 		#params_estim = params_estim.reshape(results_len, -1)
 		more_info = more_info.reshape(results_len, -1)
 		NSE_values = NSE_values.reshape(results_len, -1)
-		#RMSE_values = RMSE_values.reshape(results_len, -1)
+		RMSE_values = RMSE_values.reshape(results_len, -1)
 		theta_values = theta_values.reshape(results_len, -1)
 		#euclidean_d_values = euclidean_d_values.reshape(results_len, -1)
 		linfinity_values = linfinity_values.reshape(results_len, -1)
@@ -337,7 +337,7 @@ if __name__ == '__main__':
 		np.savetxt((save_path + '/results/' + model_e + '/00_abs_errors.txt'), abs_errors)
 		np.savetxt((save_path + '/results/' + model_e + '/00_rel_errors.txt'), rel_errors)
 		np.savetxt((save_path + '/results/' + model_e + '/00_NSE_values.txt'), NSE_values)
-		#np.savetxt((save_path + '/results/' + model_e + '/00_RMSE_values.txt'), RMSE_values)
+		np.savetxt((save_path + '/results/' + model_e + '/00_RMSE_values.txt'), RMSE_values)
 		np.savetxt((save_path + '/results/' + model_e + '/00_linfinity_values.txt'), linfinity_values)
 		#np.savetxt((save_path + '/results/' + model_e + '/00_params_origi.txt'), params_origi)
 		#np.savetxt((save_path + '/results/' + model_e + '/00_params_estim.txt'), params_estim)

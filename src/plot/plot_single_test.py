@@ -12,9 +12,9 @@ import io
 
 from matplotlib.patches import ConnectionPatch
 from matplotlib import pyplot as plt
-from gen_data import plane_nd_data, ellipse_data
-from myfit import PlaneModelND, EllipseModel
-from test_results import get_homography_params, get_hplane_params, check_antiparallelism, get_ellipse_params
+from data.gen_data import plane_nd_data, ellipse_data
+from estimation.myfit import PlaneModelND, EllipseModel
+from estimation.estimation_results import get_homography_params, get_hplane_params, check_antiparallelism, get_ellipse_params
 
 def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
     new_cmap = colors.LinearSegmentedColormap.from_list(
@@ -73,7 +73,7 @@ def get_projection(params, data):
 	estimated_projection[:,1] /= estimated_projection[:,2]
 	return estimated_projection[:,:-1]
 
-model_class = 'PlaneModelND' # {LineModelND, CircleModel, EllipseModel, PlaneModelND}
+model_class = 'HomographyModel' # {LineModelND, CircleModel, EllipseModel, PlaneModelND}
 save_path = '/home/esau/tfm/Tests/' + model_class
 
 model_class_dict = {
@@ -99,7 +99,7 @@ cm = 1/2.54  # centimeters in inches
 #estylf small size. x-axis should be 1.25 times wider if print_colormap == True
 myfigsize=(3.75*cm,3.75*cm)
 
-plot_wheights = True
+plot_wheights = False
 view_axis_labels = False
 #file_path = "/home/esau/tfm/memoria/CAP_1/figure_format_figs/"
 #file_path = "/home/esau/Documents/00_publicaciones/On the Use of Fuzzy Metrics for Robust Model Estimation A RANSAC-based Approach/FIG/PDF/"

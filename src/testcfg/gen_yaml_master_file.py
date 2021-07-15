@@ -89,13 +89,13 @@ def get_batch_list(start_batch, length):
 save_path = sys.argv[1]
 test_batch = sys.argv[2]
 model_class = 'HomographyModel'
-min_samples = 3
+min_samples = 4
 dim = 2
 target_dim = [0,1]
 points_num = 100
 
 # total outlier ratio i.e. all the data will contain this outlier_ratio
-outlier_ratios = [0.4,0.4,0.4,0.4,0.4]
+outlier_ratios = [0.2,0.4,0.5,0.6]
 # outlier_ratio in uniform noise
 un_outlier_ratio = 1
 stop_prob = 0.99
@@ -141,7 +141,7 @@ ranges =[[-rng_mag,rng_mag],
 bbox_limits = 	[[-bbox_mag,bbox_mag],
 				[-bbox_mag,bbox_mag]]
 
-start_batch = 53
+start_batch = 57
 batches_num = 4
 batch_list = get_batch_list(start_batch, length = batches_num)
 

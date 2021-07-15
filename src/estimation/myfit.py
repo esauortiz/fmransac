@@ -7,6 +7,16 @@ from mpmath import acot
 from matplotlib import pyplot as plt
 
 
+# WLS homography estimation ; kornia implementation
+import warnings
+from typing import Tuple
+import torch
+from kornia.geometry.epipolar import normalize_points
+from kornia.utils import _extract_device_dtype
+
+TupleTensor = Tuple[torch.Tensor, torch.Tensor]
+
+
 def is_inlier(data, model_class, model_params, residual_threshold):
     data_model = model_class()
     data_residuals = np.abs(data_model.residuals(data, model_params))
@@ -895,17 +905,17 @@ class HomographyModel(BaseModel):
             raise ValueError(f'At least 4 corresponding points are needed - fp.shape: {fp.shape} - tp.shape: {tp.shape}')
             
         fp, tp, denorm_params = self.normalize_points(fp,tp)
-        # fit homography and return
-        # A particular solution is used when 
-        # MSS = 4 points (fp.shape[0] + tp.shape[0] = 4) 
-        #if fp.shape[0] == 2:
-        #    self.params = self.Hsim_from_points(fp,tp)
-        #else:
         self.params = self.HLS_from_points(fp,tp,w)
+        
+        #self.params = self.Haffine_from_points(fp,tp)
+        #self.set_H()
+
         # denormalizes similarity homgraphy params
         # and sets the denormalized params self.params = denormalized_params
         # also sets self.H to H based on self.params
+        
         self.denormalize_similarity(denorm_params)
+        self.set_H()
         return True
 
     def residuals(self, data, params = None):
@@ -1064,46 +1074,130 @@ class HomographyModel(BaseModel):
 
         return [s_cos_phi, s_sin_phi, tx, ty]
 
-    def Haffine_from_points(fp,tp):
+    def Haffine_from_points(self, fp,tp):
         """ Find H, affine transformation, such that 
             tp is affine transf of fp. NOT UPDATED"""
         
+        ones = np.ones((fp.shape[0],))
+        fp = np.vstack((fp.T,ones))
+        tp = np.vstack((tp.T,ones))
+
         if fp.shape != tp.shape:
             raise RuntimeError('number of points do not match')
             
         # condition points
         # --from points--
-        m = mean(fp[:2], axis=1)
-        maxstd = max(std(fp[:2], axis=1)) + 1e-9
-        C1 = diag([1/maxstd, 1/maxstd, 1]) 
+        m = np.mean(fp[:2], axis=1)
+        maxstd = np.max(np.std(fp[:2], axis=1)) + 1e-9
+        C1 = np.diag([1/maxstd, 1/maxstd, 1]) 
         C1[0][2] = -m[0]/maxstd
         C1[1][2] = -m[1]/maxstd
-        fp_cond = dot(C1,fp)
+        fp_cond = np.dot(C1,fp)
         
         # --to points--
-        m = mean(tp[:2], axis=1)
+        m = np.mean(tp[:2], axis=1)
         C2 = C1.copy() #must use same scaling for both point sets
         C2[0][2] = -m[0]/maxstd
         C2[1][2] = -m[1]/maxstd
-        tp_cond = dot(C2,tp)
+        tp_cond = np.dot(C2,tp)
         
         # conditioned points have mean zero, so translation is zero
-        A = concatenate((fp_cond[:2],tp_cond[:2]), axis=0)
-        U,S,V = linalg.svd(A.T)
+        A = np.concatenate((fp_cond[:2],tp_cond[:2]), axis=0)
+        U,S,V = np.linalg.svd(A.T)
         
         # create B and C matrices as Hartley-Zisserman (2:nd ed) p 130.
         tmp = V[:2].T
         B = tmp[:2]
         C = tmp[2:4]
         
-        tmp2 = concatenate((dot(C,linalg.pinv(B)),zeros((2,1))), axis=1) 
-        H = vstack((tmp2,[0,0,1]))
-        
+        tmp2 = np.concatenate((np.dot(C,np.linalg.pinv(B)),np.zeros((2,1))), axis=1) 
+        H = np.vstack((tmp2,[0,0,1]))
+       
         # decondition
-        H = dot(linalg.inv(C2),dot(H,C1))
-        
-        return H / H[2,2]
+        H = np.dot(np.linalg.inv(C2),np.dot(H,C1))
+
+        myH = np.array(H/H[2,2])
+        myH = myH.reshape(3,3)
+        s_cos_phi = myH[0,0]
+        s_sin_phi = myH[1,0]
+        tx = myH[1,0]
+        ty = myH[1,1]
+
+        return [s_cos_phi, s_sin_phi, tx, ty]
+        #return H / H[2,2]
     
+    def find_homography_dlt(self, fp, tp, weights = None):
+        """Computes the homography matrix using the DLT formulation.
+
+        The linear system is solved by using the Weighted Least Squares Solution for the 4 Points algorithm.
+
+        Args:
+            points1 (torch.Tensor): A set of points in the first image with a tensor shape :math:`(B, N, 2)`.
+            points2 (torch.Tensor): A set of points in the second image with a tensor shape :math:`(B, N, 2)`.
+            weights (torch.Tensor, optional): Tensor containing the weights per point correspondence with a shape of
+                    :math:`(B, N)`. Defaults to all ones.
+
+        Returns:
+            torch.Tensor: the computed homography matrix with shape :math:`(B, 3, 3)`.
+        
+        Implementation from: 
+            https://kornia.readthedocs.io/en/latest/_modules/kornia/geometry/homography.html#find_homography_dlt
+        """
+        fp = fp.reshape(1,-1,2)
+        tp = tp.reshape(1,-1,2)
+        points1 = torch.tensor(fp)
+        points2 = torch.tensor(tp)
+
+        assert points1.shape == points2.shape, points1.shape
+        assert len(points1.shape) >= 1 and points1.shape[-1] == 2, points1.shape
+        assert points1.shape[1] >= 4, points1.shape
+
+        device, dtype = _extract_device_dtype([points1, points2])
+
+        eps: float = 1e-8
+        points1_norm, transform1 = normalize_points(points1)
+        points2_norm, transform2 = normalize_points(points2)
+
+        x1, y1 = torch.chunk(points1_norm, dim=-1, chunks=2)  # BxNx1
+        x2, y2 = torch.chunk(points2_norm, dim=-1, chunks=2)  # BxNx1
+        ones, zeros = torch.ones_like(x1), torch.zeros_like(x1)
+
+        # DIAPO 11: https://www.uio.no/studier/emner/matnat/its/nedlagte-emner/UNIK4690/v16/forelesninger/lecture_4_3-estimating-homographies-from-feature-correspondences.pdf  # noqa: E501
+        ax = torch.cat([zeros, zeros, zeros, -x1, -y1, -ones, y2 * x1, y2 * y1, y2], dim=-1)
+        ay = torch.cat([x1, y1, ones, zeros, zeros, zeros, -x2 * x1, -x2 * y1, -x2], dim=-1)
+        A = torch.cat((ax, ay), dim=-1).reshape(ax.shape[0], -1, ax.shape[-1])
+
+        if weights is None:
+            # All points are equally important
+            A = A.transpose(-2, -1) @ A
+        else:
+            # We should use provided weights
+            weights = torch.tensor(weights)
+            assert len(weights.shape) == 2 and weights.shape == points1.shape[:2], weights.shape
+            w_diag = torch.diag_embed(weights.unsqueeze(dim=-1).repeat(1, 1, 2).reshape(weights.shape[0], -1))
+            A = A.transpose(-2, -1) @ w_diag @ A
+
+        try:
+            U, S, V = torch.svd(A)
+        except:
+            warnings.warn('SVD did not converge', RuntimeWarning)
+            return torch.empty((points1_norm.size(0), 3, 3), device=device, dtype=dtype)
+
+        H = V[..., -1].view(-1, 3, 3)
+        H = transform2.inverse() @ (H @ transform1)
+        H_norm = H / (H[..., -1:, -1:] + eps)
+
+        myH = np.array(H_norm)
+        myH = myH.reshape(3,3)
+
+        s_cos_phi = myH[0,0]
+        s_sin_phi = myH[1,0]
+        tx = myH[2,0]
+        ty = myH[2,1]
+
+        return [s_cos_phi, s_sin_phi, tx, ty]
+
+
     def normalize_points(self,fp,tp):
         """ Normalize points (normalization proposed 
         in "Multiple View Geometry in Computer Vision" by Hartley - Zisserman)

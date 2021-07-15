@@ -145,10 +145,31 @@ def get_homography(cam_pose1, cam_pose2):
 					[0,				 0,				1]])
 
 	t = cam_pose2[0:3] - cam_pose1[0:3]
+
+	
+	
+	f = 0.010
+	sz = 1/(10*10**(-6))
+	ox, oy = [512, 384]
+
+	k = np.array([	[f*sz, 	0, 		ox],
+					[0, 	f*sz, 	oy],
+					[0,		0,		1]])
+
+	l = np.array([	[1, 0,	0, 0], 
+					[0, 1,	0, 0],
+					[0,	0,	1, 0]])
+
+	tf = np.matmul(k, l)
+	trans = np.dot(np.array([*t, 1]), tf.T)
+	#trans /= trans[2]
+	t[0:2] = trans[0:2]
+	#print(t/cam_pose1[2])
 	H = R
-	H[:,2] += t/cam_pose1[2]
-	H = np.linalg.inv(H)
+	H[:,2] += t/cam_pose1[2] # simplifying t \cdot n
+	#H = np.linalg.inv(H)
 	H /= H[2,2]
+	#print(H)
 
 	return H
 
@@ -201,6 +222,7 @@ def get_valid_camera_pose(tx_rng, ty_rng, tz_rng, theta_rng, plane_data, k, imag
 			is_valid_pose = True
 
 	cam_pose = np.array([tx,ty,tz,theta])
+	#print(cam_pose)
 	return cam_pose, proj_data
 
 def is_the_same_pose(pose1, pose2):

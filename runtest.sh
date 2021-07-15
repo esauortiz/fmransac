@@ -6,7 +6,7 @@ model='HomographyModel' # {LineModelND, CircleModel, EllipseModel, PlaneModelND,
 #save_path_header='/home/esau/Documents/TFM/Tests'
 save_path_header='/home/esau/tfm/Tests'
 #tests_num=$2
-tests_num=1
+tests_num=5
 
 # Master batch indicates if all the data of the master batch is
 # going to be copied in the other batches of the test
@@ -22,7 +22,7 @@ for i in $(seq $initial_batch $batches_num); do
 	save_path=${save_path_header}/${model}/batch_$i
 
 	# Create directories
-	#rm -r ${save_path}
+	rm -r ${save_path}
 	mkdir -p ${save_path}
 	mkdir -p ${save_path}/data
 	mkdir -p ${save_path}/results
