@@ -7,16 +7,6 @@ from mpmath import acot
 from matplotlib import pyplot as plt
 
 
-# WLS homography estimation ; kornia implementation
-import warnings
-from typing import Tuple
-import torch
-from kornia.geometry.epipolar import normalize_points
-from kornia.utils import _extract_device_dtype
-
-TupleTensor = Tuple[torch.Tensor, torch.Tensor]
-
-
 def is_inlier(data, model_class, model_params, residual_threshold):
     data_model = model_class()
     data_residuals = np.abs(data_model.residuals(data, model_params))
@@ -1126,78 +1116,6 @@ class HomographyModel(BaseModel):
         return [s_cos_phi, s_sin_phi, tx, ty]
         #return H / H[2,2]
     
-    def find_homography_dlt(self, fp, tp, weights = None):
-        """Computes the homography matrix using the DLT formulation.
-
-        The linear system is solved by using the Weighted Least Squares Solution for the 4 Points algorithm.
-
-        Args:
-            points1 (torch.Tensor): A set of points in the first image with a tensor shape :math:`(B, N, 2)`.
-            points2 (torch.Tensor): A set of points in the second image with a tensor shape :math:`(B, N, 2)`.
-            weights (torch.Tensor, optional): Tensor containing the weights per point correspondence with a shape of
-                    :math:`(B, N)`. Defaults to all ones.
-
-        Returns:
-            torch.Tensor: the computed homography matrix with shape :math:`(B, 3, 3)`.
-        
-        Implementation from: 
-            https://kornia.readthedocs.io/en/latest/_modules/kornia/geometry/homography.html#find_homography_dlt
-        """
-        fp = fp.reshape(1,-1,2)
-        tp = tp.reshape(1,-1,2)
-        points1 = torch.tensor(fp)
-        points2 = torch.tensor(tp)
-
-        assert points1.shape == points2.shape, points1.shape
-        assert len(points1.shape) >= 1 and points1.shape[-1] == 2, points1.shape
-        assert points1.shape[1] >= 4, points1.shape
-
-        device, dtype = _extract_device_dtype([points1, points2])
-
-        eps: float = 1e-8
-        points1_norm, transform1 = normalize_points(points1)
-        points2_norm, transform2 = normalize_points(points2)
-
-        x1, y1 = torch.chunk(points1_norm, dim=-1, chunks=2)  # BxNx1
-        x2, y2 = torch.chunk(points2_norm, dim=-1, chunks=2)  # BxNx1
-        ones, zeros = torch.ones_like(x1), torch.zeros_like(x1)
-
-        # DIAPO 11: https://www.uio.no/studier/emner/matnat/its/nedlagte-emner/UNIK4690/v16/forelesninger/lecture_4_3-estimating-homographies-from-feature-correspondences.pdf  # noqa: E501
-        ax = torch.cat([zeros, zeros, zeros, -x1, -y1, -ones, y2 * x1, y2 * y1, y2], dim=-1)
-        ay = torch.cat([x1, y1, ones, zeros, zeros, zeros, -x2 * x1, -x2 * y1, -x2], dim=-1)
-        A = torch.cat((ax, ay), dim=-1).reshape(ax.shape[0], -1, ax.shape[-1])
-
-        if weights is None:
-            # All points are equally important
-            A = A.transpose(-2, -1) @ A
-        else:
-            # We should use provided weights
-            weights = torch.tensor(weights)
-            assert len(weights.shape) == 2 and weights.shape == points1.shape[:2], weights.shape
-            w_diag = torch.diag_embed(weights.unsqueeze(dim=-1).repeat(1, 1, 2).reshape(weights.shape[0], -1))
-            A = A.transpose(-2, -1) @ w_diag @ A
-
-        try:
-            U, S, V = torch.svd(A)
-        except:
-            warnings.warn('SVD did not converge', RuntimeWarning)
-            return torch.empty((points1_norm.size(0), 3, 3), device=device, dtype=dtype)
-
-        H = V[..., -1].view(-1, 3, 3)
-        H = transform2.inverse() @ (H @ transform1)
-        H_norm = H / (H[..., -1:, -1:] + eps)
-
-        myH = np.array(H_norm)
-        myH = myH.reshape(3,3)
-
-        s_cos_phi = myH[0,0]
-        s_sin_phi = myH[1,0]
-        tx = myH[2,0]
-        ty = myH[2,1]
-
-        return [s_cos_phi, s_sin_phi, tx, ty]
-
-
     def normalize_points(self,fp,tp):
         """ Normalize points (normalization proposed 
         in "Multiple View Geometry in Computer Vision" by Hartley - Zisserman)
