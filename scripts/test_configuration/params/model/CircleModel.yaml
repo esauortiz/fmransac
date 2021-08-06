@@ -1,0 +1,5 @@
+model_class: CircleModel
+dim: 2
+xc: [5,6]
+yx: [5,6]
+radius: [10,12]

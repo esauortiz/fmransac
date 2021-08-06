@@ -1,0 +1,24 @@
+group_params:
+  save_path : '/home/esau/tfm/tests'
+  initial_batch_id : 0
+  n_batches : 4
+  model_class : 'LineModelND'
+
+dataset_params:
+  model_bbox : 15 
+  dataset_bbox : 10
+  noise_dim : [0,1]
+  outlier_ratio : [0.2,0.4,0.5,0.6]
+  sd : [1,2,3,4]
+  n_points : 100
+
+ransac_params:
+  min_samples : 4
+  stop_prob : 0.99
+  t_max : 5000
+  threshold : [1,2,3,4]
+  kappa : 0
+  inlier_prob : 0 # for HomographyModel inlier_prob : 0.997
+  df : 2
+  theta : 0
+  n : 1

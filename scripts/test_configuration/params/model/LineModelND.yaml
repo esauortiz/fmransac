@@ -1,0 +1,9 @@
+model_class: LineModelND
+dim: 2
+axis_range : [15, 16]
+axis: 0
+origin: [-10, 10]
+direction: [-10, 10]
+# range of slope of the line w.r.t. to axis
+quadrant: [45,90]
+
