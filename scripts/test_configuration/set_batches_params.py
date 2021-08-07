@@ -3,26 +3,24 @@ import io
 import os
 
 from scipy.stats.distributions import chi2
-
-def _read_yaml(file_name):
-	with open(file_name, 'r') as stream: 
-		return yaml.safe_load(stream)
+from file_utils import _read_yaml
 
 if __name__ == '__main__':
 
 	# batch group params
 	current_path = os.path.dirname(os.path.realpath(__file__))
-	batch_group = _read_yaml(f'{current_path}/params/batch_group.yaml')
-	save_path 		 = batch_group['group_params']['save_path']
-	initial_batch_id = batch_group['group_params']['initial_batch_id']
-	model_class 	 = batch_group['group_params']['model_class']
-	n_batches 		 = batch_group['group_params']['n_batches']
+	batch_group_params = _read_yaml(f'{current_path}/params/batch_group.yaml')
+	save_path 		 = batch_group_params['group_params']['save_path']
+	initial_batch_id = batch_group_params['group_params']['initial_batch_id']
+	model_class 	 = batch_group_params['group_params']['model_class']
+	n_batches 		 = batch_group_params['group_params']['n_batches']
+	n_tests 		 = batch_group_params['group_params']['n_tests']
 
 	# model class params
 	model_params = _read_yaml(f'{current_path}/params/model/{model_class}.yaml')
 
 	# dataset params
-	dataset_params = batch_group['dataset_params']
+	dataset_params = batch_group_params['dataset_params']
 		# all params in dataset_params as list
 	for key in dataset_params:
 		if not isinstance(dataset_params[key], list) and key != 'noise_dim':
@@ -30,13 +28,9 @@ if __name__ == '__main__':
 			for i in range(n_batches):
 				param_list.append(dataset_params[key])
 			dataset_params[key] = param_list
-
-	inliers_num = [int(dataset_params['n_points'][0]*int(1-x)) for x in dataset_params['outlier_ratio']]
-	outliers_num = [int(dataset_params['n_points'][0]*(x)) for x in dataset_params['outlier_ratio']]
-	uniform_noise_bbox = dataset_params['dataset_bbox']
-
+	
 	# ransac params
-	ransac_params = batch_group['ransac_params']
+	ransac_params = batch_group_params['ransac_params']
 		# all params in dataset_params as list
 	for key in ransac_params:
 		if not isinstance(ransac_params[key], list) and key != 'noise_dim':
@@ -73,14 +67,16 @@ if __name__ == '__main__':
 		batch_params = {
 			'save_path' : f'{save_path}/{model_class}/{batch_id}',
 			'batch_id' : batch_id,
+			'n_tests' : n_tests,
 			'model_params' : model_params,
 			'dataset_params' : {
 				'model_bbox' 	: dataset_params['model_bbox'][i],
 				'dataset_bbox' 	: dataset_params['dataset_bbox'][i],
-				'noise_dim' 	: dataset_params['noise_dim'],
 				'outlier_ratio' : dataset_params['outlier_ratio'][i],
-				'sd' 			: dataset_params['sd'][i],
 				'n_points' 		: dataset_params['n_points'][i],
+				'noise_dim' 	: dataset_params['noise_dim'],
+				'sd' 			: dataset_params['sd'][i],
+				'uniform_noise_bbox' : dataset_params['uniform_noise_bbox'][i],
 			},
 			'ransac_params' : {
 				'outlier_ratio' : dataset_params['outlier_ratio'][i],

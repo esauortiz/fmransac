@@ -1,16 +1,29 @@
 group_params:
-  save_path : '/home/esau/tfm/tests'
+  save_path : /home/esau/tfm/tests
   initial_batch_id : 0
   n_batches : 4
-  model_class : 'LineModelND'
+  n_tests : 10
+  model_class : PlaneModelND
+  estimators : [default,
+                RANSAC,
+                MSAC,
+                FMR1_M1,
+                FMR1_M2,
+                FMR1_M3,
+                FMR1_M4,
+                FMR2_M1,
+                FMR2_M2,
+                FMR2_M3,
+                FMR2_M4]
 
 dataset_params:
   model_bbox : 15 
   dataset_bbox : 10
+  uniform_noise_bbox : 10
+  n_points : 100
   noise_dim : [0,1]
   outlier_ratio : [0.2,0.4,0.5,0.6]
   sd : [1,2,3,4]
-  n_points : 100
 
 ransac_params:
   min_samples : 4

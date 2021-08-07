@@ -1,8 +1,10 @@
 import numpy as np
-import sys
 import random
 import yaml
 import io
+import os
+
+from file_utils import _read_yaml
 
 def _get_origin_direction(origin_range, direction_range, dim, quadrant = None):
     origin = []
@@ -27,111 +29,105 @@ def _get_origin_direction(origin_range, direction_range, dim, quadrant = None):
 
     return origin, direction
 
-# test meta params
-test_header = 'test_'
-test_batch = sys.argv[1]
-test_num = int(sys.argv[2])
-save_path = sys.argv[3]
+if __name__ == '__main__':
 
-# Read yaml master
-yaml_file = save_path + '/batch_params.yaml'
-with open(yaml_file, 'r') as stream:
-    batch_params = yaml.safe_load(stream)
+    # read batch group params
+    current_path = os.path.dirname(os.path.realpath(__file__))
+    batch_group_params = _read_yaml(f'{current_path}/params/batch_group.yaml')
+    save_path = batch_group_params['group_params']['save_path']
+    n_batches = batch_group_params['group_params']['n_batches']
+    initial_batch_id = batch_group_params['group_params']['initial_batch_id']
+    n_tests = batch_group_params['group_params']['n_tests']
+    model_class = batch_group_params['group_params']['model_class']
 
-# Select only current batch params
-model_class = batch_params['model_class']
-data_params = batch_params['data_params']
-noise_params = batch_params['noise_params']
+    for batch_id in range(n_batches):
+        # read batch params
+        batch_params = _read_yaml(f'{save_path}/{model_class}/batch_{initial_batch_id + batch_id}/batch_params.yaml')
+        model_params = batch_params['model_params']
 
-for test_id in range(1, test_num + 1):
-    # random seed
-    # seed_mod setted at 0 as default
-    random.seed(test_id)
-    np.random.seed(test_id)
+        for test_id in range(n_tests):
+            # random seed
+            # seed_mod setted at 0 as default
+            random.seed(test_id)
+            np.random.seed(test_id)
 
-    # Model
-    model_params = None
-    data_len = None
+            # Model
+            test_model_params = None
+            data_len = None
 
-    if model_class == 'LineModelND':
-        axis = data_params['axis']
-        axis_range = [- random.randint(*data_params['axis_range']), 
-                        random.randint(*data_params['axis_range'])]
+            if model_class == 'LineModelND':
+                axis = model_params['axis']
+                axis_range = [- random.randint(*model_params['axis_range']), 
+                                random.randint(*model_params['axis_range'])]
 
-        quadrant = data_params['quadrant']
-        if quadrant == 0:
-            quadrant = None
-        origin, direction = _get_origin_direction(  data_params['origin'], 
-                                                    data_params['direction'], 
-                                                    data_params['dim'],
-                                                    quadrant)
-        # the range will be applied to the direction component with most weight
-        max_index_col = np.argmax(abs(np.array([*direction])), axis=0)
-        data_len = [axis_range, int(max_index_col)]
-        model_params = [origin, direction]
+                quadrant = model_params['quadrant']
+                if quadrant == 0:
+                    quadrant = None
+                origin, direction = _get_origin_direction(  model_params['origin'], 
+                                                            model_params['direction'], 
+                                                            model_params['dim'],
+                                                            quadrant)
+                # the range will be applied to the direction component with most weight
+                max_index_col = np.argmax(abs(np.array([*direction])), axis=0)
+                data_len = [axis_range, int(max_index_col)]
+                test_model_params = [origin, direction]
 
-    elif model_class == 'CircleModel':
+            elif model_class == 'CircleModel':
 
-        xc = random.randint(*data_params['xc'])
-        yc = random.randint(*data_params['yc'])
-        radius = random.randint(*data_params['radius'])
+                xc = random.randint(*model_params['xc'])
+                yc = random.randint(*model_params['yc'])
+                radius = random.randint(*model_params['radius'])
 
-        data_len = data_params['samples']
-        model_params = [xc, yc, radius]
+                data_len = model_params['samples']
+                test_model_params = [xc, yc, radius]
 
-    elif model_class == 'EllipseModel':
+            elif model_class == 'EllipseModel':
 
-        xc = random.randint(*data_params['xc'])
-        yc = random.randint(*data_params['yc'])
-        height = random.randint(*data_params['a'])
-        width = random.randint(*data_params['b'])
-        theta = random.randint(*data_params['theta'])
-        theta = float(theta / 10**(3))
-        
-        data_len = data_params['samples']
-        model_params = [xc, yc, height, width, theta]
+                xc = random.randint(*model_params['xc'])
+                yc = random.randint(*model_params['yc'])
+                height = random.randint(*model_params['a'])
+                width = random.randint(*model_params['b'])
+                theta = random.randint(*model_params['theta'])
+                theta = float(theta / 10**(3))
+                
+                data_len = model_params['samples']
+                test_model_params = [xc, yc, height, width, theta]
 
-    elif model_class == 'PlaneModelND':
-        origin, direction = _get_origin_direction(data_params['orgn_range'], data_params['nrm_vctr_range'], (data_params['dim']))
-        data_len = [data_params['ranges'], data_params['samples']]
+            elif model_class == 'PlaneModelND':
+                origin, direction = _get_origin_direction(model_params['origin_range'], model_params['normal_vector_range'], (model_params['dim']))
+                data_len = model_params['samples']
 
-        model_params = [origin, direction]
+                test_model_params = [origin, direction]
 
-    elif model_class == 'HomographyModel':
-        
-        # 3D plane params
-        origin, direction = _get_origin_direction(data_params['orgn_range'], data_params['nrm_vctr_range'], 3)
-        # ranges and samples of 3D plane
-        data_len = [data_params['ranges'], data_params['samples']]
-        # Camera extrinsincs params
-        theta = data_params['theta']
-        tx = data_params['tx']
-        ty = data_params['ty']
-        tz = data_params['tz']
+            elif model_class == 'HomographyModel':
+                
+                # 3D plane params
+                origin, direction = _get_origin_direction(model_params['orgn_range'], model_params['nrm_vctr_range'], 3)
+                # ranges and samples of 3D plane
+                data_len = [model_params['ranges'], model_params['samples']]
+                # Camera extrinsincs params
+                theta = model_params['theta']
+                tx = model_params['tx']
+                ty = model_params['ty']
+                tz = model_params['tz']
 
-        model_params = [theta, tx, ty, tz, origin, direction]
+                test_model_params = [theta, tx, ty, tz, origin, direction]
 
-    # Set file name
-    file_name = test_header + str(test_id)
+            # Define data
+            payload = {
+                'test_id': test_id,
+                'save_path' : f'{save_path}/{model_class}/batch_{initial_batch_id + batch_id}',
+                'model_params' : {
+                    'model': model_class,
+                    'data_len' : data_len,
+                    'model_params': test_model_params,
+                },
+                #'dataset_params' : batch_group_params['dataset_params'],
+                #'ransac_params' : batch_group_params['ransac_params']
+            }
 
-    # Define data
-    payload = {
-        'data_params' : {
-            'model': model_class,
-            'data_len' : data_len,
-            'model_params': model_params,
-            'gn_params': noise_params['gn_params'],
-            'un_params': noise_params['un_params'],
-            'on_params': noise_params['on_params'],
-            'bbox_limits': data_params['bbox_limits'],
-            'bbox_limits_tolerance' : data_params['bbox_limits_tolerance']
-        },
-        'seed': test_id,
-        'ransac_params' : [*batch_params['ransac_params'], test_id],
-        'save_path' : save_path,
-        'file_name' : file_name
-    }
-    # Write YAML file
-    with io.open((save_path + '/yaml/' + file_name + '.yaml'), 'w', encoding='utf8') as outfile:
-        yaml.dump(payload, outfile, default_flow_style=False, allow_unicode=True)
+            # Write YAML file
+            file = f'{save_path}/{model_class}/batch_{initial_batch_id + batch_id}/tests_params/test_{test_id}.yaml'
+            with io.open(file, 'w', encoding='utf8') as outfile:
+                yaml.dump(payload, outfile, default_flow_style=False, allow_unicode=True)
 

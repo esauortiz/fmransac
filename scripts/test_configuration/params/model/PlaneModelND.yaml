@@ -1,5 +1,5 @@
 model_class : PlaneModelND
 dim : 2
-normal_vector : [-100,100]
+normal_vector_range : [-100,100]
 origin_range : [0,0]
-
+samples : 10000
