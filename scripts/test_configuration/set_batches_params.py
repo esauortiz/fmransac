@@ -77,6 +77,8 @@ if __name__ == '__main__':
 				'noise_dim' 	: dataset_params['noise_dim'],
 				'sd' 			: dataset_params['sd'][i],
 				'uniform_noise_bbox' : dataset_params['uniform_noise_bbox'][i],
+				'residual_kappa' : dataset_params['residual_kappa'][i],
+				'max_trials' : dataset_params['max_trials'][i],
 			},
 			'ransac_params' : {
 				'outlier_ratio' : dataset_params['outlier_ratio'][i],
