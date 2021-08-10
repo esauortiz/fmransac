@@ -4,112 +4,7 @@ import numpy as np
 from numpy.linalg import inv, pinv
 from scipy import optimize
 from mpmath import acot
-from matplotlib import pyplot as plt
-
-
-def is_inlier(data, model_class, model_params, residual_threshold):
-    data_model = model_class()
-    data_residuals = np.abs(data_model.residuals(data, model_params))
-    return data_residuals < residual_threshold
-
-def get_residuals(data, model_class, model_params):
-    data_model = model_class()
-    data_residuals = np.abs(data_model.residuals(data, model_params))
-    return data_residuals   
-
-def _check_data_dim(data, dim):
-    if data.ndim != 2 or data.shape[1] != dim:
-        raise ValueError('Input data must have shape (N, %d).' % dim)
-
-def _check_data_atleast_2D(data):
-    if data.ndim < 2 or data.shape[1] < 2:
-        raise ValueError(f'Input data must be at least 2D. Data shape is {data.shape}')
-
-def _norm_along_axis(x, axis):
-    """NumPy < 1.8 does not support the `axis` argument for `np.linalg.norm`."""
-    return np.sqrt(np.einsum('ij,ij->i', x, x))
-
-def musigma_norm(data):
-    """Normalizes data based on
-    mu-sigma normalization
-    Parameters
-    ----------
-    data : (N, dim) array
-        N points in a space of dimensionality dim >= 2.
-    Returns
-    -------
-    data : (N, dim) array
-        Normalized data
-    H : (dim + 1, dim + 1) array
-        Normalization matrix
-    """
-    dim = data.shape[1]
-
-    # vector of means of every column in data
-    mu_ax = data.mean(axis = 0)
-    # vector of std of every column in data
-    std_ax = data.std(axis = 0)
-
-    # building normalization matrix H
-    diag = np.ones((dim + 1,))
-    diag[0:dim,] = 1 / std_ax
-    H = np.diag(diag)
-    H[:, dim][0:dim,] = -mu_ax/std_ax
-    
-    """ example of H matrix of 2D data
-    
-    H = np.array([  [1/s_x, 0,      -mu_x/s_x],
-                    [0,     1/s_y,  -mu_y/s_y],
-                    [0,     0,      1]])
-    """
-
-    # apply normalization and return
-    data_matrix = np.ones((data.shape[0],data.shape[1] + 1))
-    data_matrix[:,:-1] = data
-    data =  np.dot(H, data_matrix.T).T[:,0:dim]
-    return data, H
-
-def maxmin_norm(data):
-    """Normalizes data based on
-    mu-sigma normalization
-    Parameters
-    ----------
-    data : (N, dim) array
-        N points in a space of dimensionality dim >= 2.
-    Returns
-    -------
-    data : (N, dim) array
-        Normalized data
-    H : (dim + 1, dim + 1) array
-        Normalization matrix
-    """
-    dim = data.shape[1]
-
-    # vector of max of every column in data
-    max_ax = data.max(axis = 0)
-    # vector of min of every column in data
-    min_ax = data.min(axis = 0)
-    # vector of r of every column in data
-    r_ax = max_ax - min_ax
-
-    # building normalization matrix H
-    diag = np.ones((dim + 1,))
-    diag[0:dim,] = 1 / r_ax
-    H = np.diag(diag)
-    H[:, dim][0:dim,] = -min_ax/r_ax
-    
-    """ example of H matrix of 2D data
-    
-    H = np.array([  [1/r_x, 0,      -min_x/r_x],
-                    [0,     1/r_y,  -min_y/r_y],
-                    [0,     0,      1]])
-    """
-
-    # apply normalization and return
-    data_matrix = np.ones((data.shape[0],data.shape[1] + 1))
-    data_matrix[:,:-1] = data
-    data =  np.dot(H, data_matrix.T).T[:,0:dim]
-    return data, H
+from .utils import _check_data_dim, _check_data_atleast_2D, _norm_along_axis, _musigma_norm, _maxmin_norm
 
 class BaseModel(object):
 
@@ -281,9 +176,7 @@ class PlaneModelND(BaseModel):
     Attributes
     ----------
     params : tuple
-        Line model parameters in the following order `origin`, `subspace`.
-        where subspace constains the normal_vector and the rest of the axis of the
-        subspace
+        Line model parameters in the following order (`origin`, `direction`).
     """
 
     def estimate(self, data, w = None):
@@ -324,7 +217,7 @@ class PlaneModelND(BaseModel):
         self.params = (origin, normal_vector)
         """
 
-        #OWLS (if w = np.ones((points_num,)) results will be the same as TLS)
+        #OWLS (if w = np.ones((n_points,)) results will be the same as TLS)
         if w is None:
             w = np.ones(np.shape(data[:,0]), dtype = int)
             w = w / np.sum(w)
@@ -401,15 +294,15 @@ class PlaneModelND(BaseModel):
         res = (np.dot(data, normal_vector) - np.dot(origin, normal_vector)) / np.linalg.norm(normal_vector)
         return res
 
-    def predict(self, ranges, points_num, seed = 0, params=None):
-        """ Builds a hyperplane given the ranges of the subspace
+    def predict(self, model_bbox, n_points, seed = None, params=None):
+        """ Builds a hyperplane given the model_bbox of the subspace
             of the hyperplane.
         Parameters
         ----------
-        ranges : (n, m) array
+        model_bbox : (n, m) array
             Coordinate limits along an axis.
-        points_num : int
-            Number of points along an axis
+        n_points : int
+            Number of model samples
         params : (2, ) array, optional
             Optional custom parameter set in the form (`origin`, `direction`).
         Returns
@@ -457,8 +350,8 @@ class PlaneModelND(BaseModel):
         v = gs(np.array([normal_vector, *(np.random.rand(dim - 1, dim))]))
         subspace = v[1:dim,]
 
-        data = np.zeros((points_num, dim), dtype = float)
-        for V, rng in zip(subspace, ranges):
+        data = np.zeros((n_points, dim), dtype = float)
+        for V, rng in zip(subspace, model_bbox):
             for coord in data: 
                 coord += np.random.uniform(*rng) * V
         data += origin 
@@ -647,7 +540,7 @@ class EllipseModel(BaseModel):
         # another REFERENCE: [2] http://mathworld.wolfram.com/Ellipse.html
         _check_data_dim(data, dim=2)
 
-        data, H = maxmin_norm(data)
+        data, H = _maxmin_norm(data)
 
         x = data[:, 0]
         y = data[:, 1]
@@ -914,10 +807,10 @@ class HomographyModel(BaseModel):
 
         def add_ones_column(data):
             """Adds ones column in data
-            data.shape is suposed to be (points_num, dim)
+            data.shape is suposed to be (n_points, dim)
             """
-            points_num, dim = data.shape
-            ones = np.ones((points_num, dim+1))
+            n_points, dim = data.shape
+            ones = np.ones((n_points, dim+1))
             ones[:,:-1] = data
             return ones.T
 
@@ -957,18 +850,18 @@ class HomographyModel(BaseModel):
         
         # create matrix for linear method, 2 rows for each correspondence pair
         nbr_correspondences = fp.shape[1]
-        A = zeros((2*nbr_correspondences,9))
+        A = np.zeros((2*nbr_correspondences,9))
         for i in range(nbr_correspondences):        
             A[2*i] = [-fp[0][i],-fp[1][i],-1,0,0,0,
                         tp[0][i]*fp[0][i],tp[0][i]*fp[1][i],tp[0][i]]
             A[2*i+1] = [0,0,0,-fp[0][i],-fp[1][i],-1,
                         tp[1][i]*fp[0][i],tp[1][i]*fp[1][i],tp[1][i]]
         
-        U,S,V = linalg.svd(A)
+        U,S,V = np.linalg.svd(A)
         H = V[8].reshape((3,3))    
         
         # decondition
-        H = dot(linalg.inv(C2),dot(H,C1))
+        H = np.dot(np.linalg.inv(C2),np.dot(H,C1))
         
         # normalize and return
         return H / H[2,2]
