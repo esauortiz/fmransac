@@ -3,7 +3,7 @@ import io
 import os
 
 from scipy.stats.distributions import chi2
-from file_utils import _read_yaml
+from test_configuration.utils import _read_yaml
 
 if __name__ == '__main__':
 

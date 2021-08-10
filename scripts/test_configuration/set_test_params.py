@@ -4,7 +4,7 @@ import yaml
 import io
 import os
 
-from file_utils import _read_yaml
+from test_configuration.utils import _read_yaml
 
 def _get_origin_direction(origin_range, direction_range, dim, quadrant = None):
     origin = []
@@ -53,7 +53,7 @@ if __name__ == '__main__':
 
             # Model
             test_model_params = None
-            data_len = None
+            model_samples = None
 
             if model_class == 'LineModelND':
                 axis = model_params['axis']
@@ -69,7 +69,7 @@ if __name__ == '__main__':
                                                             quadrant)
                 # the range will be applied to the direction component with most weight
                 max_index_col = np.argmax(abs(np.array([*direction])), axis=0)
-                data_len = [axis_range, int(max_index_col)]
+                model_samples = [axis_range, int(max_index_col)]
                 test_model_params = [origin, direction]
 
             elif model_class == 'CircleModel':
@@ -78,7 +78,7 @@ if __name__ == '__main__':
                 yc = random.randint(*model_params['yc'])
                 radius = random.randint(*model_params['radius'])
 
-                data_len = model_params['samples']
+                model_samples = model_params['samples']
                 test_model_params = [xc, yc, radius]
 
             elif model_class == 'EllipseModel':
@@ -90,12 +90,12 @@ if __name__ == '__main__':
                 theta = random.randint(*model_params['theta'])
                 theta = float(theta / 10**(3))
                 
-                data_len = model_params['samples']
+                model_samples = model_params['samples']
                 test_model_params = [xc, yc, height, width, theta]
 
             elif model_class == 'PlaneModelND':
                 origin, direction = _get_origin_direction(model_params['origin_range'], model_params['normal_vector_range'], (model_params['dim']))
-                data_len = model_params['samples']
+                model_samples = model_params['samples']
 
                 test_model_params = [origin, direction]
 
@@ -104,7 +104,7 @@ if __name__ == '__main__':
                 # 3D plane params
                 origin, direction = _get_origin_direction(model_params['orgn_range'], model_params['nrm_vctr_range'], 3)
                 # ranges and samples of 3D plane
-                data_len = [model_params['ranges'], model_params['samples']]
+                model_samples = [model_params['ranges'], model_params['samples']]
                 # Camera extrinsincs params
                 theta = model_params['theta']
                 tx = model_params['tx']
@@ -119,8 +119,8 @@ if __name__ == '__main__':
                 'save_path' : f'{save_path}/{model_class}/batch_{initial_batch_id + batch_id}',
                 'model_params' : {
                     'model': model_class,
-                    'data_len' : data_len,
-                    'model_params': test_model_params,
+                    'model_samples' : model_samples,
+                    'params': test_model_params,
                 },
                 #'dataset_params' : batch_group_params['dataset_params'],
                 #'ransac_params' : batch_group_params['ransac_params']

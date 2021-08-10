@@ -1,5 +1,5 @@
 import os
-from file_utils import _read_yaml, _create_directory, _remove_directory
+from test_configuration.utils import _read_yaml, _create_directory, _remove_directory
 
 if __name__ == "__main__":
 
