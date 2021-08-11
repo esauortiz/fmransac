@@ -41,12 +41,12 @@ if __name__ == '__main__':
 
 		# if kappa != 0 then thereshold values will be computed 
 		# based on dataset standard deviation (sd)
-	if ransac_params['kappa'][0] != 0:
+	if ransac_params['residual_kappa'][0] != 0:
 		threshold = []
 		print('Thereshold values will be computed based on dataset standard deviation (sd)')
-		for kappa, sd in zip(ransac_params['kappa'], dataset_params['sd']):
+		for kappa, sd in zip(ransac_params['residual_kappa'], dataset_params['sd']):
 			threshold.append(kappa*sd)
-		ransac_params['threshold'] = threshold
+		ransac_params['residual_threshold'] = threshold
 
 		# if inlier_prob != 0 then thereshold values will be computed 
 		# assuming a chi2 distribution of the fitting errors
@@ -55,12 +55,12 @@ if __name__ == '__main__':
 		print('Thereshold values will be computed assuming a chi2 distribution of the fitting errors')
 		for inlier_prob, df, sd in zip(ransac_params['inlier_prob'], ransac_params['df'], dataset_params['sd']):
 			threshold.append(((sd**2)*float(chi2.ppf(0.997, df=sd)))**0.5)
-		ransac_params['threshold'] = threshold
+		ransac_params['residual_threshold'] = threshold
 
 		# if theta == 0 then threshold values are chosen as theta values
 	if ransac_params['theta'][0] == 0:
 		print('Threshold values are chosen as theta values')
-		ransac_params['theta'] = ransac_params['threshold']
+		ransac_params['theta'] = ransac_params['residual_threshold']
 
 	for i in range(n_batches):
 		batch_id = f'batch_{initial_batch_id + i}'
@@ -69,6 +69,7 @@ if __name__ == '__main__':
 			'batch_id' : batch_id,
 			'n_tests' : n_tests,
 			'model_params' : model_params,
+			'estimators_names' : batch_group_params['group_params']['estimators_names'],
 			'dataset_params' : {
 				'model_bbox' 	: dataset_params['model_bbox'][i],
 				'dataset_bbox' 	: dataset_params['dataset_bbox'][i],
@@ -82,12 +83,15 @@ if __name__ == '__main__':
 			},
 			'ransac_params' : {
 				'outlier_ratio' : dataset_params['outlier_ratio'][i],
+				'max_trials' 	: ransac_params['max_trials'][i],
 				't_max' 		: ransac_params['t_max'][i],
 				'stop_prob' 	: ransac_params['stop_prob'][i],
 				'min_samples' 	: ransac_params['min_samples'][i],
-				'threshold' 	: ransac_params['threshold'][i],
 				'theta' 		: ransac_params['theta'][i],
-				'n' 			: ransac_params['n'][i]
+				'sigma_phi' 	: ransac_params['sigma_phi'][i],
+				'n' 			: ransac_params['n'][i],
+				'residual_threshold' : ransac_params['residual_threshold'][i],
+				'convergence_threshold' : ransac_params['convergence_threshold'][i]
 			}
 		}
 

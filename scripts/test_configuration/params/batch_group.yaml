@@ -3,14 +3,10 @@ group_params:
   initial_batch_id : 0
   n_batches : 4
   n_tests : 10
-  model_class : EllipseModel
-  estimators : [default,
+  model_class : PlaneModelND
+  estimators_names : [default,
                 RANSAC,
                 MSAC,
-                FMR1_M1,
-                FMR1_M2,
-                FMR1_M3,
-                FMR1_M4,
                 FMR2_M1,
                 FMR2_M2,
                 FMR2_M3,
@@ -24,16 +20,19 @@ dataset_params:
   max_trials : 10000 # max. trials to generate inliers or outliers
   noise_dim : [0,1]
   outlier_ratio : [0.2,0.4,0.5,0.6]
-  residual_kappa : 1 # multiplier to set residual_threshold = kappa * sd 
-  sd : 3
+  residual_kappa : 2 # multiplier to set residual_threshold = kappa * sd 
+  sd : 1
 
 ransac_params:
   min_samples : 4
   stop_prob : 0.99
+  max_trials : 1000
   t_max : 5000
-  threshold : [1,2,3,4]
-  kappa : 0 # if kappa = 0 threshold values are chosen, else threshold = kappa * sd
+  residual_threshold : [1,2,3,4]
+  residual_kappa : 0 # if kappa = 0 threshold values are chosen, else threshold = kappa * sd
   inlier_prob : 0 # for HomographyModel inlier_prob : 0.997
   df : 2
   theta : 0
+  sigma_phi : 0.5 # \in [0,1]
   n : 1
+  convergence_threshold : 0.0005 # max. variation between t and t-1 of a model parameter, when reached iterative reestimation stops

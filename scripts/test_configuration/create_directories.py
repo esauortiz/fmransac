@@ -11,7 +11,7 @@ if __name__ == "__main__":
 	n_batches = batch_group_params['group_params']['n_batches']
 	initial_batch_id = batch_group_params['group_params']['initial_batch_id']
 	model_class = batch_group_params['group_params']['model_class']
-	estimators = batch_group_params['group_params']['estimators']
+	estimators = batch_group_params['group_params']['estimators_names']
 
 	remove_directories = False
 	if input("Do you want to remove previously created directories? (y/n): ") == 'y':
