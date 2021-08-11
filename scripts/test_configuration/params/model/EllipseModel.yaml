@@ -5,3 +5,4 @@ yc : [0,0]
 a : [6,7]
 b : [4,5]
 theta : [0,3140] # theta in rads will de devided by 10^-3 later
+samples : 1000

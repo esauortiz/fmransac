@@ -3,7 +3,7 @@ group_params:
   initial_batch_id : 0
   n_batches : 4
   n_tests : 10
-  model_class : PlaneModelND
+  model_class : EllipseModel
   estimators : [default,
                 RANSAC,
                 MSAC,
@@ -20,12 +20,12 @@ dataset_params:
   model_bbox : 15 
   dataset_bbox : 10
   uniform_noise_bbox : 10
-  n_points : 100
-  max_trials : 1000 # max. trials to generate inliers or outliers
+  n_points : 300
+  max_trials : 10000 # max. trials to generate inliers or outliers
   noise_dim : [0,1]
   outlier_ratio : [0.2,0.4,0.5,0.6]
-  residual_kappa : 3 # multiplier to set residual_threshold = kappa * sd 
-  sd : [1,2,3,4]
+  residual_kappa : 1 # multiplier to set residual_threshold = kappa * sd 
+  sd : 3
 
 ransac_params:
   min_samples : 4
