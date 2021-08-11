@@ -4,12 +4,13 @@ import numpy as np
 from numpy.linalg import inv, pinv
 from scipy import optimize
 from mpmath import acot
-from .utils import _check_data_dim, _check_data_atleast_2D, _norm_along_axis, _musigma_norm, _maxmin_norm
+from estimation.utils import _check_data_dim, _check_data_atleast_2D, _norm_along_axis, _musigma_norm, _maxmin_norm
+from dataset_generation.utils import _is_in_bbox
 
 class BaseModel(object):
 
-    def __init__(self):
-        self.params = None
+    def __init__(self, params = None):
+        self.params = params
 
 class LineModelND(BaseModel):
     """Total least squares estimator for N-dimensional lines.
@@ -280,6 +281,7 @@ class PlaneModelND(BaseModel):
         residuals : (N, ) array
             Residual for each data point.
         """
+
         _check_data_atleast_2D(data)
         if params is None:
             if self.params is None:
@@ -499,7 +501,7 @@ class EllipseModel(BaseModel):
     The estimator is based on a least squares minimization. The optimal
     solution is computed directly, no iterations are required. This leads
     to a simple, stable and robust fitting method.
-    The ``params`` attribute contains the parameters in the following order::
+    The ``params`` attribute contains the implicit parameters in the following order::
         xc, yc, a, b, theta
     Attributes
     ----------
@@ -511,9 +513,9 @@ class EllipseModel(BaseModel):
         `f`, `g`.
     """
 
-    def __init__(self):
-        BaseModel.__init__(self)
-        self.params_general = None
+    def __init__(self, params = None, params_general = None):
+        self.params = params
+        self.params_general = params_general
 
     def estimate(self, data, w = None):
         """Estimate circle model from data using total least squares.
@@ -593,8 +595,7 @@ class EllipseModel(BaseModel):
         f /= 2.
 
         self.params_general = [a,b,c,d,f,g]
-        # denormalizes params_general and sets self.params
-        # self.params = denormalized_implicit_params
+        # denormalizes general and implicit params
         self.denorm_params(H)
         
         return True
@@ -660,7 +661,7 @@ class EllipseModel(BaseModel):
 
         return residuals
 
-    def predict_xy(self, t, params=None):
+    def predict_xy(self, t, params=None, model_bbox = None):
         """Predict x- and y-coordinates using the estimated model.
         Parameters
         ----------
@@ -688,8 +689,37 @@ class EllipseModel(BaseModel):
         x = xc + a * ctheta * ct - b * stheta * st
         y = yc + a * stheta * ct + b * ctheta * st
 
-        return np.concatenate((x[..., None], y[..., None]), axis=t.ndim)
+        model_dataset = np.concatenate((x[..., None], y[..., None]), axis=t.ndim)
 
+        if model_bbox is not None:
+            filtered_dataset = []
+            for coord in model_dataset:
+                if _is_in_bbox(coord, model_bbox):
+                    filtered_dataset.append(coord)
+            model_dataset = np.asarray(filtered_dataset)
+
+        return model_dataset
+
+    def get_general_params(self, params = None):
+
+        if params is not None:
+            xc, yc, ax, bx, theta = params
+        else:
+            xc, yc, ax, bx, theta = self.params
+
+        z = np.array([[xc], [yc]])
+        Q = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
+        # A = Q'*diag(a^-2,b^-2)*Q
+        A = np.matmul(np.matmul(Q, np.diag([ax**(-2), bx**(-2)])), np.transpose(Q))
+        # C = -2*A*z
+        C = -2*(np.matmul(A, z))
+        # D = z'*A*z - 1
+        D = np.matmul(np.matmul(np.transpose(z), A), z) - 1
+        a, b, c, d, f, g = [A[0,0], A[0,1], A[1,1], C[0,0] / 2, C[1,0] / 2, D[0,0]]
+
+        #general eq. of an ellipse: a*x^2 + 2*b*x*y + c*y^2 + 2*d*x + 2*f*y + g = 0
+        return np.array([a, b, c, d, f, g])
+        
     def get_implicit_params(self, params_general = None):
 
         if params_general is not None:

@@ -105,24 +105,6 @@ def get_circle_params(params):
 	xc, yc, r = params
 	return np.array([-2*xc, -2*yc, ((xc ** 2) + (yc ** 2) - (r ** 2))])
 
-def get_ellipse_params(params):
-	
-	# if params are already general equation form return
-	xc, yc, ax, bx, theta = params
-
-	z = np.array([[xc], [yc]])
-	Q = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
-	# A = Q'*diag(a^-2,b^-2)*Q
-	A = np.matmul(np.matmul(Q, np.diag([ax**(-2), bx**(-2)])), np.transpose(Q))
-	# C = -2*A*z
-	C = -2*(np.matmul(A, z))
-	# D = z'*A*z - 1
-	D = np.matmul(np.matmul(np.transpose(z), A), z) - 1
-	a, b, c, d, f, g = [A[0,0], A[0,1], A[1,1], C[0,0] / 2, C[1,0] / 2, D[0,0]]
-
-	#general eq. of an ellipse: a*x^2 + 2*b*x*y + c*y^2 + 2*d*x + 2*f*y + g = 0
-	return np.array([a, b, c, d, f, g])
-
 def get_homography_params(params):
 
 	s_cos_phi, s_sin_phi, tx, ty = params

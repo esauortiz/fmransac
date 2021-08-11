@@ -1,5 +1,4 @@
 import numpy as np
-import yaml
 
 class RANSAC(object):
     def __init__(   self, min_samples, residual_threshold, 
@@ -74,6 +73,7 @@ class RANSAC(object):
         best_inliers = np.zeros((np.shape(data)[0],), dtype = bool)
         best_residuals = np.zeros((np.shape(data)[0],), dtype = float)
         best_scores = np.ones((np.shape(data)[0],), dtype = float) * np.inf
+        seed = int(seed)
 
         # random variable to choose minimal sample sets
         random_state = np.random.RandomState(seed)
@@ -169,13 +169,14 @@ class MSAC(RANSAC):
 class FMR(RANSAC):
     # scores and compatibility values mean the same
     def __init__(   self, min_samples, residual_threshold, 
-                    max_trials, stop_probability, variant, t_max = 1, sigma_phi = 0, 
-                    convergence_threshold= 0.0005, outlier_ratio = None):
-        RANSAC.__init__(   self, min_samples, residual_threshold, 
-                    max_trials, stop_probability, outlier_ratio)
+                    max_trials, stop_probability, variant, fuzzy_metric, t_max = 1, sigma_phi = 0, 
+                    convergence_threshold = 0.0005, outlier_ratio = None):
+        RANSAC.__init__(self, min_samples, residual_threshold, 
+                        max_trials, stop_probability, outlier_ratio)
         
         # variant of FMR
         self.variant = variant
+        self.fuzzy_metric = fuzzy_metric
         # number of iterations at _iterative_reestimation stage
         #  if t_max = 1 only one reestimation will be performed
         self.t_max = t_max
@@ -184,10 +185,10 @@ class FMR(RANSAC):
         # convergence threshold for _iterative_reestimation stage
         self.convergence_threshold = convergence_threshold
 
-    def _score_function(self, residuals, fuzzy_metric):
-        return fuzzy_metric._compatibilities(residuals)
+    def _score_function(self, residuals):
+        return self.fuzzy_metric._compatibilities(residuals)
 
-    def _iterative_reestimation(self, data, model_class, fuzzy_metric, model, scores,
+    def _iterative_reestimation(self, data, model_class, model, scores,
                                 best_inliers = None, iterations = 0,
                                 test_id = None, save_path = None, # debug variables
                                 file_name = None, debug = False): # debug variables
@@ -209,24 +210,23 @@ class FMR(RANSAC):
             scores_inliers = scores_inliers / np.sum(scores_inliers)
             new_model.estimate(*data_inliers, scores_inliers)
 
-        # residuals and scores
+        # new residuals and scores
         new_residuals = new_model.residuals(*data)
-        new_scores = self._score_function(np.abs(new_residuals), fuzzy_metric)
+        new_scores = self._score_function(np.abs(new_residuals))
 
         def _check_convergence(prev_params, new_params):
-            L_infinity = abs(np.asarray(prev_params) - np.asarray(new_params))
-            if np.max(L_infinity) < self.convergence_threshold:
+            if np.max(abs(np.asarray(prev_params) - np.asarray(new_params))) < self.convergence_threshold:
                 return True
             return False
 
         if (_check_convergence(prev_params, new_model.params) == True) or iterations > self.t_max:
             return new_model, new_scores, iterations
         else:
-            return self._iterative_reestimation(data, model_class, fuzzy_metric, new_model,
+            return self._iterative_reestimation(data, model_class, new_model,
                                                 new_scores, best_inliers, iterations, 
                                                 test_id, save_path, file_name, debug)
 
-    def run(self, data, model_class, fuzzy_metric, seed = None):
+    def run(self, data, model_class, seed = None):
         """ Core of Fuzzy Metric Based RANSAC algorithm
         Parameters
         ----------
@@ -244,7 +244,8 @@ class FMR(RANSAC):
         best_inliers = np.zeros((np.shape(data)[0],), dtype = bool)
         best_residuals = np.zeros((np.shape(data)[0],), dtype = float)
         best_scores = np.zeros((np.shape(data)[0],), dtype = float)
-        
+        seed = int(seed)
+
         if self.variant == 4:
             # all points are considered inliers
             sample_model_inliers = np.ones((np.shape(data)[0],), dtype = bool)
@@ -283,14 +284,14 @@ class FMR(RANSAC):
             # estimate model for current random sample set
             sample_model = model_class()
 
-            # First estimation i.e. whithout weights
+            # First estimation i.e. whitout weights
             success = sample_model.estimate(*samples)
             # if the model could not be estimate then continue
             if success is not None and not success:
                 continue
             sample_model_residuals = np.abs(sample_model.residuals(*data))
             # compute scores
-            sample_model_scores = self._score_function(sample_model_residuals, fuzzy_metric)
+            sample_model_scores = self._score_function(sample_model_residuals)
 
             # consensus set / inliers
             if self.variant in [1, 2]:
@@ -342,14 +343,15 @@ class FMR(RANSAC):
                     scores_inliers = scores_inliers / np.sum(scores_inliers)
                     best_scores = best_scores / np.sum(best_scores)
                     best_model.estimate(*data_inliers, scores_inliers)
-            
+        # iterative reestimation with at most t_max iterations
         elif best_inliers is not None and self.t_max > 1:
             if self.variant in [2, 3]:
                 # best_inliers as argument for first iteration
-                best_model, best_scores, iterations = self._iterative_reestimation( data, model_class, fuzzy_metric, best_model, 
-                                                                                    best_scores, best_inliers = best_inliers, iterations = 0)
+                best_model, best_scores, iterations = self._iterative_reestimation( data, model_class, best_model, best_scores, 
+                                                                                    best_inliers = best_inliers, iterations = 0)
             elif self.variant == 4:
-                best_model, best_scores, iterations = self._iterative_reestimation( data, model_class, fuzzy_metric, best_model, 
+                # best_inliers are not specified because whole dataset is used
+                best_model, best_scores, iterations = self._iterative_reestimation( data, model_class, best_model, 
                                                                                     best_scores, iterations = 0)
 
         #best_residuals = best_model.residuals(*data)
