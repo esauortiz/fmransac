@@ -111,7 +111,7 @@ if __name__ == '__main__':
         global finished_tests
         finished_tests = args
 
-    with Pool(processes = 1, initializer = _init_pool, initargs = (finished_tests, )) as p:
+    with Pool(processes = 8, initializer = _init_pool, initargs = (finished_tests, )) as p:
         p.map(_run_test, range(n_tests))
 
     print(' ')
