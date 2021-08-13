@@ -11,6 +11,7 @@ if __name__ == '__main__':
     model_class = str(sys.argv[1])
     batch_id = str(sys.argv[2])
 
+    # read batch params
     current_path = os.path.dirname(os.path.realpath(__file__))
     scripts_path = current_path[:-11]
     yaml_file = f'{scripts_path}/test_configuration/params/batch_group.yaml'
@@ -26,7 +27,7 @@ if __name__ == '__main__':
     ransac_params = batch_params['ransac_params']
     outlier_ratio = batch_params['dataset_params']['outlier_ratio']
 
-    # configure_ estimators
+    # configure estimators
     min_samples = ransac_params['min_samples']
     residual_threshold = ransac_params['residual_threshold']
     max_trials = ransac_params['max_trials']
@@ -39,7 +40,7 @@ if __name__ == '__main__':
 
     estimators = []
     for estimator_name in estimators_names:
-        if estimator_name not in ['default', 'RANSAC', 'MSAC']:
+        if estimator_name not in ['RANSAC', 'MSAC']:
             variant = int(estimator_name[3])
             fuzzy_metric = eval(estimator_name[-2:])(n = n, theta = theta)
             estimators.append(FMR( min_samples, residual_threshold, max_trials, stop_probability, 
@@ -60,7 +61,7 @@ if __name__ == '__main__':
         if model_class.__name__ == 'HomographyModel':
             try:
                 data1 = np.loadtxt(f'{save_path}/datasets/test_{test_id}_proj1.txt')
-                data2 = np.loadtxt(f'{save_path}/test_{test_id}_proj2.txt')
+                data2 = np.loadtxt(f'{save_path}/datasets/test_{test_id}_proj2.txt')
                 data = np.column_stack((data1,data2))
             except IOError:
                 print(f'Data for test_{test_id} not found')
@@ -92,5 +93,7 @@ if __name__ == '__main__':
 
     #for test_id in range(n_tests):
     #    _run_test(test_id)
+
+    # run estimation tests
     with Pool(8) as p:
         p.map(_run_test, range(n_tests))

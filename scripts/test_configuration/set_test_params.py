@@ -30,6 +30,8 @@ def _get_origin_direction(origin_range, direction_range, dim, quadrant = None):
     return origin, direction
 
 if __name__ == '__main__':
+    
+    print('[*] Setting tests parameters ...')
 
     # read batch group params
     current_path = os.path.dirname(os.path.realpath(__file__))

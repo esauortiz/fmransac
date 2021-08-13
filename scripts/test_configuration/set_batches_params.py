@@ -6,6 +6,7 @@ from scipy.stats.distributions import chi2
 from test_configuration.utils import _read_yaml
 
 if __name__ == '__main__':
+	print('[*] Setting batch parameters ...')
 
 	# batch group params
 	current_path = os.path.dirname(os.path.realpath(__file__))
