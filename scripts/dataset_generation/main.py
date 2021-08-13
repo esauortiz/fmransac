@@ -74,11 +74,13 @@ if __name__ == '__main__':
                 inliers = _gaussian_noise(original_data, original_model, dataset_params, seed = test_id)
                 outliers = _uniform_noise(original_data, original_model, dataset_params, seed = test_id)
                 noisy_data = np.concatenate((inliers, outliers), axis = 0)
+                inliers_mask = np.concatenate((np.ones((inliers.shape[0],)), np.zeros((outliers.shape[0],))), axis = 0)
 
                 # write noisy data file
                 np.savetxt((test_params['save_path'] + '/datasets/test_' + str(test_id) + '.txt'), noisy_data)
                 # write original data file (for plotting pourposes)
-                np.savetxt((test_params['save_path'] + '/datasets/test_' + str(test_id) + '_original.txt'), noisy_data)
+                # np.savetxt((test_params['save_path'] + '/datasets/test_' + str(test_id) + '_original.txt'), noisy_data)
+                # np.savetxt((test_params['save_path'] + '/datasets/test_' + str(test_id) + '_inliers.txt'), inliers_mask)
             
             except RuntimeError:
                 print(f'Data for test {test_id} has not been generated')
