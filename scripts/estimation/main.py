@@ -86,8 +86,8 @@ if __name__ == '__main__':
             if model is not None:
                 np.savetxt(f'{save_path}/results/{estimator_name}/test_{test_id}_inliers.txt', inliers)
                 np.savetxt(f'{save_path}/results/{estimator_name}/test_{test_id}_params.txt', model.params)
+                np.savetxt(f'{save_path}/results/{estimator_name}/test_{test_id}_iterations.txt', np.array([iterations]))
                 if estimator_name not in ['RANSAC', 'MSAC']:
-                    np.savetxt(f'{save_path}/results/{estimator_name}/test_{test_id}_iterations.txt', np.array([iterations]))
                     np.savetxt(f'{save_path}/results/{estimator_name}/test_{test_id}_scores.txt', scores)
 
         with finished_tests.get_lock():

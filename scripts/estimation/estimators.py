@@ -146,7 +146,7 @@ class RANSAC(object):
             best_model.estimate(*data_inliers)
 
         #best_residuals = best_model.residuals(*data)
-        return best_model, best_inliers, best_scores, num_trials
+        return best_model, best_inliers, best_scores, 0
 
 class MSAC(RANSAC):
     def _loss_function(self, residuals):
