@@ -387,6 +387,27 @@ class PlaneModelND(BaseModel):
         self.params = (origin[:-1], normal_vector[:-1])
         return True
 
+    def get_general_params(self, params = None):
+        """ return hyperplane general parameters
+        from [normal_vector, origin] set
+        Parameters
+        ----------
+        (optional) params : (2, N) array
+        set of normal_vector and origin
+        with N dimensions
+        Returns
+        -------
+        general_params : (N + 1, ) array
+        """
+        if params is not None:
+            self.params = params
+
+        self.params = np.asarray(self.params).reshape(2, -1) # ensure set of [normal_vector, origin]
+        origin, normal_vector = self.params
+        normal_vector /= np.linalg.norm(normal_vector)
+        x_n = np.dot(np.transpose(normal_vector), origin)
+        return np.append(normal_vector, x_n)
+
 class CircleModel(BaseModel):
 
     """Total least squares estimator for 2D circles.
@@ -488,6 +509,12 @@ class CircleModel(BaseModel):
         y = yc + r * np.sin(t)
 
         return np.concatenate((x[..., None], y[..., None]), axis=t.ndim)
+
+    def get_general_params(self, params = None):
+        if params is not None:
+            self.params = params
+        xc, yc, r = self.params
+        return np.array([-2*xc, -2*yc, ((xc ** 2) + (yc ** 2) - (r ** 2))])
 
 class EllipseModel(BaseModel):
 
@@ -1133,3 +1160,23 @@ class HomographyModel(BaseModel):
             row /= data[-1]
             print(np.sum(row))
         return data[:,:-1].T
+
+    def get_general_params(self, params = None):
+        if params is not None:
+            self.params = params
+        s_cos_phi, s_sin_phi, tx, ty = self.params
+        """
+        H = np.array([[s_cos_phi, -s_sin_phi, tx],
+                    [s_sin_phi, s_cos_phi,  ty],
+                    [0,         0,          1]])
+        H = np.linalg.inv(H)
+        H /= H[2,2]
+        s_cos_phi = H[0,0]
+        s_sin_phi = H[1,0]
+        tx = H[0,2]
+        ty = H[1,2]
+        """
+        s = np.sqrt(s_cos_phi**2 + s_sin_phi**2)
+        phi = np.arctan(s_sin_phi/s_cos_phi)
+        params = np.array([s, phi, tx, ty])
+        return params
