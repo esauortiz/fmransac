@@ -1,10 +1,11 @@
 group_params:
   save_path : /home/esau/tfm/tests
+  group_id : 'G1'
   initial_batch_id : 0
   n_batches : 4
   n_tests : 10
   model_class : PlaneModelND
-  estimators_names : [default,
+  estimators_names : [
                 RANSAC,
                 MSAC,
                 FMR2_M1,
