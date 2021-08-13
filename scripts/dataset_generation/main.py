@@ -7,6 +7,8 @@ import sys, os
 
 if __name__ == '__main__':
 
+    print('[*] Generating datasets ...')
+
     model_class = str(sys.argv[1])
     batch_id = str(sys.argv[2])
 
