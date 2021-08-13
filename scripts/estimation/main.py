@@ -57,8 +57,6 @@ if __name__ == '__main__':
     def _run_test(test_id):
         global finished_tests
 
-        test_id = str(test_id)
-
         # Read noisy data
         if model_class.__name__ == 'HomographyModel':
             try:
