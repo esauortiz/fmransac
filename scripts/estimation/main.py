@@ -2,11 +2,13 @@ from estimation.estimators import RANSAC, MSAC, FMR
 from estimation.fuzzy_metrics import M1, M2, M3, M4
 from estimation.fit import PlaneModelND, EllipseModel, HomographyModel
 from test_configuration.utils import _read_yaml
-from multiprocessing import Pool
+from multiprocessing import Pool, Value
 import numpy as np
 import sys, os
 
 if __name__ == '__main__':
+
+    print('[*] Estimating parameters ...')
 
     model_class = str(sys.argv[1])
     batch_id = str(sys.argv[2])
@@ -53,8 +55,8 @@ if __name__ == '__main__':
                                     stop_probability, outlier_ratio))
 
     def _run_test(test_id):
-        sys.stdout.write("\rEstimating params for test %i" % test_id)
-        sys.stdout.flush()
+        global finished_tests
+
         test_id = str(test_id)
 
         # Read noisy data
@@ -89,11 +91,27 @@ if __name__ == '__main__':
                 if estimator_name not in ['RANSAC', 'MSAC']:
                     np.savetxt(f'{save_path}/results/{estimator_name}/test_{test_id}_iterations.txt', np.array([iterations]))
                     np.savetxt(f'{save_path}/results/{estimator_name}/test_{test_id}_scores.txt', scores)
+
+        with finished_tests.get_lock():
+            finished_tests.value += 1
+
+        percentage_completed = "%.2f" % float(finished_tests.value / n_tests * 100)
+        sys.stdout.write(f'\rEstimating model parameters for {batch_id} with {n_tests} tests | {percentage_completed} % Complete')
+        sys.stdout.flush()
+
         return True
 
     #for test_id in range(n_tests):
     #    _run_test(test_id)
 
     # run estimation tests
-    with Pool(8) as p:
+    finished_tests = Value('i', 0)
+
+    def _init_pool(args):
+        global finished_tests
+        finished_tests = args
+
+    with Pool(processes = 1, initializer = _init_pool, initargs = (finished_tests, )) as p:
         p.map(_run_test, range(n_tests))
+
+    print(' ')
