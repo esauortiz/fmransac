@@ -2,6 +2,7 @@ from test_configuration.utils import _read_yaml
 from estimation.fit import PlaneModelND, EllipseModel, HomographyModel
 from estimation.fit import CircleModel, LineModelND
 from dataset_generation.utils import _uniform_noise, _get_bbox_from_value
+from multiprocessing import Pool, Value
 import numpy as np
 import sys, os
 
@@ -25,7 +26,8 @@ if __name__ == '__main__':
     n_tests = batch_params['n_tests']
     model_class = batch_params['model_params']['model_class']
 
-    for test_id in range(n_tests):
+    def _run_dataset_generation(test_id):
+        global finished_tests
 
         test_params = _read_yaml(f'{save_path}/tests_params/test_{test_id}.yaml')
         model_params = test_params['model_params']
@@ -80,3 +82,22 @@ if __name__ == '__main__':
             
             except RuntimeError:
                 print(f'Data for test {test_id} has not been generated')
+
+        with finished_tests.get_lock():
+            finished_tests.value += 1
+
+        percentage_completed = "%.2f" % float(finished_tests.value / n_tests * 100)
+        sys.stdout.write(f'\rGenerating datasets for {batch_id} with {n_tests} tests | {percentage_completed} % Complete')
+        sys.stdout.flush()
+    
+    # run estimation tests
+    finished_tests = Value('i', 0)
+
+    def _init_pool(args):
+        global finished_tests
+        finished_tests = args
+
+    with Pool(processes = 8, initializer = _init_pool, initargs = (finished_tests, )) as p:
+        p.map(_run_dataset_generation, range(n_tests))
+
+    print(' ')
