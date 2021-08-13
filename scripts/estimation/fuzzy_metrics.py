@@ -7,7 +7,7 @@ class FuzzyMetric(object):
         self.m = m
 
 class M1(FuzzyMetric):
-    def _compatibilities(self, residuals):
+    def compatibilities(self, residuals):
         size = np.size(residuals)
         compatibilities = np.zeros(size)
         for i, residual in zip(range(size), residuals):
@@ -17,7 +17,7 @@ class M1(FuzzyMetric):
         return compatibilities
 
 class M2(FuzzyMetric):
-    def _compatibilities(self, residuals):
+    def compatibilities(self, residuals):
         size = np.size(residuals)
         compatibilities = np.zeros(size)
         for i, residual in zip(range(size), residuals):
@@ -27,13 +27,13 @@ class M2(FuzzyMetric):
         return compatibilities
 
 class M3(FuzzyMetric):
-    def _compatibilities(self, residuals):
+    def compatibilities(self, residuals):
         exponents = (residuals ** self.n) / (self.theta ** self.n) 
         compatibilities = np.exp(-exponents)
         return compatibilities
 
 class M4(FuzzyMetric):
-    def _compatibilities(self, residuals):
+    def compatibilities(self, residuals):
         if self.m == None:
             self.m = 1
         compatibilities = (self.theta ** self.n) / ((self.theta ** self.n) + (self.m * (residuals ** self.n)))

@@ -186,7 +186,7 @@ class FMR(RANSAC):
         self.convergence_threshold = convergence_threshold
 
     def _score_function(self, residuals):
-        return self.fuzzy_metric._compatibilities(residuals)
+        return self.fuzzy_metric.compatibilities(residuals)
 
     def _iterative_reestimation(self, data, model_class, model, scores,
                                 best_inliers = None, iterations = 0,
