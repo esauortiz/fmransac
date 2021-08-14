@@ -1,0 +1,15 @@
+# simple text
+text:
+  # model class abbreviation 
+  EllipseModel : EM
+  PlaneModelND : PM
+  HomographyModel : HM
+
+# latex equations
+tex_eq:
+  model_estimated : M_{\widehat{\Theta}}
+  model_original : M_{{\Theta}^*}
+
+# latex macros
+tex_macros:
+  mymacro : fun
