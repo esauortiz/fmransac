@@ -5,6 +5,7 @@ if __name__ == '__main__':
 
     model_class = sys.argv[1]
     group_id = sys.argv[2]
+    
     current_path = os.path.dirname(os.path.realpath(__file__))
     tests_path = _read_yaml(f'{current_path}/test_configuration/params/tests_path.yaml')['path']
     # read saved group params (batch_group_params could be modified but save_path is expected not to change)
