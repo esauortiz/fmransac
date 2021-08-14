@@ -25,7 +25,7 @@ def _get_estimation_error(params_original, params_estimated):
     rel_error = []
     for param_original, param_estimated in zip(params_original, params_estimated):
         abs_error.append(param_original - param_estimated)
-        if param_original != 0:
+        if param_original != 0: # angle division by 0
             rel_error.append((param_original - param_estimated) / param_original)
         else:
             rel_error.append(0)
