@@ -1,5 +1,5 @@
 model_class : PlaneModelND
-dim : 2
-normal_vector_range : [-100,100]
-origin_range : [0,0]
-samples : 10000
+dim : 2 # dimension of the model
+normal_vector_range : [-100,100] # each component of the normal vector is chosen between this range
+origin_range : [0,0] # each component of the origin is chosen between this range
+samples : 10000 # number of samples of the dataset whose samples 'fits perfectly' to the model

@@ -1,10 +1,10 @@
 group_params:
   group_id : 'G1'
   initial_batch_id : 0
-  n_batches : 1
-  n_tests : 10
+  n_batches : 1 # number of tests batches each with n_tests
+  n_tests : 10  # number of different datasets (each with different model parameters)
   model_class : EllipseModel
-  estimators_names : [
+  estimators_names : [ # estimators list to estimate each dataset
                 RANSAC,
                 MSAC,
                 FMR1_M1,
@@ -17,26 +17,26 @@ group_params:
                 FMR2_M4]
 
 dataset_params:
-  model_bbox : 15 
-  dataset_bbox : 10
-  uniform_noise_bbox : 10
-  n_points : 300
-  max_trials : 10000 # max. trials to generate inliers or outliers
-  noise_dim : [0,1]
+  model_bbox : 15     # PlaneModelND is contained in [-model_bbox, model_bbox] along every axis
+  dataset_bbox : 10   # dataset is contained in [-dataset_bbox, dataset_bbox] along every axis
+  uniform_noise_bbox : 10 # magnitude of the uniform noise, it is recommended to set this value equal to dataset_bbox
+  n_points : 300      # dataset total samples 
+  max_trials : 10000  # max. trials to generate inliers or outliers
+  noise_dim : [0,1]   # gaussian noise and uniform noise will affect these dimensions
   outlier_ratio : [0.2,0.4,0.5,0.6]
-  residual_kappa : 1 # multiplier to set residual_threshold = kappa * sd 
-  sd : 1
+  residual_kappa : 1  # multiplier to set residual_threshold = kappa * sd 
+  sd : 1              # magnitude of the gaussian noise
 
 ransac_params:
-  min_samples : 4
-  stop_prob : 0.99
-  max_trials : 1000
-  t_max : 5000
-  residual_threshold : [1,2,3,4]
-  residual_kappa : 0 # if kappa = 0 threshold values are chosen, else threshold = kappa * sd
-  inlier_prob : 0 # for HomographyModel inlier_prob : 0.997
-  df : 2
-  theta : 0
-  sigma_phi : 0.5 # \in [0,1]
-  n : 1
+  min_samples : 4       # set of samples chosen in each main loop iteration
+  stop_prob : 0.99      # probability to compute number of iterations in the main loop of RANSAC
+  max_trials : 1000     # max. number of iterations in the main loop of RANSAC
+  t_max : 25            # max. number of iterations in the model refinement stage (iterative reestimation)
+  residual_threshold : [1,2,3,4] # threshold to classify dataset in inliers/outliers
+  residual_kappa : 0    # if kappa = 0 threshold values are chosen, else threshold = kappa * sd
+  inlier_prob : 0       # for HomographyModel inlier_prob : 0.997
+  df : 2                # degrees of freedom to compute residual_threshold assuming fitting error follows a chi2 distribution  
+  theta : 0             # fuzzy metric param
+  sigma_phi : 0.5       # fuzzy metric param \in [0,1]
+  n : 1                 # fuzzy metric param
   convergence_threshold : 0.0005 # max. variation between t and t-1 of a model parameter, when reached iterative reestimation stops

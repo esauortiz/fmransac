@@ -1,9 +1,8 @@
 model_class: LineModelND
-dim: 2
-axis_range : [15, 16]
-axis: 0
-origin: [-10, 10]
-direction: [-10, 10]
-# range of slope of the line w.r.t. to axis
-quadrant: [45,90]
+dim: 2  # dimension of the model
+axis_range : [15, 16] # model is contained in [-axis_range, axis_range]
+axis: 0               # `axis` axis_range is referred to
+origin: [-10, 10]     # each component of the origin is chosen between this range
+direction: [-10, 10]  # each component of the direction vector is chosen between this range
+quadrant: [45,90]     # range of slope of the line w.r.t. to `axis`
 
