@@ -353,6 +353,8 @@ class FMR(RANSAC):
                 # best_inliers are not specified because whole dataset is used
                 best_model, best_scores, iterations = self._iterative_reestimation( data, model_class, best_model, 
                                                                                     best_scores, iterations = 0)
-
+            elif self.variant == 1:
+                iterations = 0
+                
         #best_residuals = best_model.residuals(*data)
         return best_model, best_inliers, best_scores, iterations
