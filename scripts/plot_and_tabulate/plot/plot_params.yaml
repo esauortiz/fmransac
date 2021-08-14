@@ -1,0 +1,14 @@
+save_path: /home/esau/Documents
+save_figure: False
+fig_size: [3.75, 3.75] # [width, height] size in cm
+view_axis_ticks: False
+plot_legend: False
+plot_color_map_bar: False
+plot_compatibilities: False
+model_original_color: [0.65,0.65,0.65]
+model_estimated_color: [0.00,0.00,0.00]
+model_original_line_width: 2.55
+model_estimated_line_width: 2.55
+outlier_color: [1.00,0.00,0.00]
+inlier_color: [0.00,0.00,0.01]
+point_size: 2
