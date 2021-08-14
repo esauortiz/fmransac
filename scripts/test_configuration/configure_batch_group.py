@@ -10,7 +10,6 @@ if __name__ == "__main__":
     tests_path = _read_yaml(f'{current_path}/params/tests_path.yaml')['path']
     model_class = batch_group_params['group_params']['model_class']
     group_id = batch_group_params['group_params']['group_id']
-    batch_group_params['group_params']['tests_path'] = tests_path
 
     _create_directory(f'{tests_path}/{model_class}')
     _create_directory(f'{tests_path}/{model_class}/00_batch_groups')
