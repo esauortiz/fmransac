@@ -22,7 +22,7 @@ This python package includes modules to:
 
 ## Installation
 
-This package requires Python Python 3.6.9+ to run.
+This package requires Python 3.6.9+ to run.
 
 Install requirements.
 ```sh
