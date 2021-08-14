@@ -8,21 +8,17 @@ import sys, os
 
 if __name__ == '__main__':
 
-    print('[*] Estimating parameters ...')
-
     model_class = str(sys.argv[1])
     batch_id = str(sys.argv[2])
 
     # read batch params
     current_path = os.path.dirname(os.path.realpath(__file__))
     scripts_path = current_path[:-11]
-    yaml_file = f'{scripts_path}/test_configuration/params/batch_group.yaml'
-    batch_group_params = _read_yaml(yaml_file)
-    save_path = batch_group_params['group_params']['save_path']
+    tests_path = _read_yaml(f'{scripts_path}/test_configuration/params/tests_path.yaml')['path']
 
-    batch_params = _read_yaml(f'{save_path}/{model_class}/{batch_id}/batch_params.yaml')
+    batch_save_path = f'{tests_path}/{model_class}/{batch_id}'
+    batch_params = _read_yaml(f'{batch_save_path}/batch_params.yaml')
     dataset_params = batch_params['dataset_params']
-    save_path = batch_params['save_path']
     n_tests = batch_params['n_tests']
     model_class = eval(batch_params['model_params']['model_class'])
     estimators_names = batch_params['estimators_names']
@@ -60,18 +56,18 @@ if __name__ == '__main__':
         # Read noisy data
         if model_class.__name__ == 'HomographyModel':
             try:
-                data1 = np.loadtxt(f'{save_path}/datasets/test_{test_id}_proj1.txt')
-                data2 = np.loadtxt(f'{save_path}/datasets/test_{test_id}_proj2.txt')
+                data1 = np.loadtxt(f'{batch_save_path}/datasets/test_{test_id}_proj1.txt')
+                data2 = np.loadtxt(f'{batch_save_path}/datasets/test_{test_id}_proj2.txt')
                 data = np.column_stack((data1,data2))
             except IOError:
-                print(f'Data for test_{test_id} not found')
+                print(f'    Data for test_{test_id} not found')
                 #continue
         else:
             try:
-                data = np.loadtxt(f'{save_path}/datasets/test_{test_id}.txt', delimiter=" ")
+                data = np.loadtxt(f'{batch_save_path}/datasets/test_{test_id}.txt', delimiter=" ")
                 #data = data[~np.isnan(data)]
             except IOError:
-                print(f'Data for test_{test_id} not found')
+                print(f'    Data for test_{test_id} not found')
                 return True
             
         # default estimation (e.g. Total Least Squares)
@@ -84,11 +80,11 @@ if __name__ == '__main__':
             # robustly fit line only using inlier data (robust model)
             model, inliers, scores, iterations = estimator.run(data, model_class, seed = test_id)
             if model is not None:
-                np.savetxt(f'{save_path}/results/{estimator_name}/test_{test_id}_inliers.txt', inliers)
-                np.savetxt(f'{save_path}/results/{estimator_name}/test_{test_id}_params.txt', model.params)
-                np.savetxt(f'{save_path}/results/{estimator_name}/test_{test_id}_iterations.txt', np.array([iterations]))
+                np.savetxt(f'{batch_save_path}/results/{estimator_name}/test_{test_id}_inliers.txt', inliers)
+                np.savetxt(f'{batch_save_path}/results/{estimator_name}/test_{test_id}_params.txt', model.params)
+                np.savetxt(f'{batch_save_path}/results/{estimator_name}/test_{test_id}_iterations.txt', np.array([iterations]))
                 if estimator_name not in ['RANSAC', 'MSAC']:
-                    np.savetxt(f'{save_path}/results/{estimator_name}/test_{test_id}_scores.txt', scores)
+                    np.savetxt(f'{batch_save_path}/results/{estimator_name}/test_{test_id}_scores.txt', scores)
 
         with finished_tests.get_lock():
             finished_tests.value += 1

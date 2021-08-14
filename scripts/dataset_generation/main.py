@@ -8,28 +8,23 @@ import sys, os
 
 if __name__ == '__main__':
 
-    print('[*] Generating datasets ...')
-
     model_class = str(sys.argv[1])
     batch_id = str(sys.argv[2])
 
     current_path = os.path.dirname(os.path.realpath(__file__))
     scripts_path = current_path[:-19]
-    yaml_file = f'{scripts_path}/test_configuration/params/batch_group.yaml'
-    batch_group_params = _read_yaml(yaml_file)
-    save_path = batch_group_params['group_params']['save_path']
-    initial_batch_id = batch_group_params['group_params']['save_path']
+    tests_path = _read_yaml(f'{scripts_path}/test_configuration/params/tests_path.yaml')['path']
+    batch_save_path = f'{tests_path}/{model_class}/{batch_id}'
+    batch_params = _read_yaml(f'{batch_save_path}/batch_params.yaml')
 
-    batch_params = _read_yaml(f'{save_path}/{model_class}/{batch_id}/batch_params.yaml')
     dataset_params = batch_params['dataset_params']
-    save_path = batch_params['save_path']
     n_tests = batch_params['n_tests']
     model_class = batch_params['model_params']['model_class']
 
     def _run_dataset_generation(test_id):
         global finished_tests
 
-        test_params = _read_yaml(f'{save_path}/tests_params/test_{test_id}.yaml')
+        test_params = _read_yaml(f'{batch_save_path}/tests_params/test_{test_id}.yaml')
         model_params = test_params['model_params']
 
         # generate original model data
@@ -77,10 +72,11 @@ if __name__ == '__main__':
                 inliers_mask = np.concatenate((np.ones((inliers.shape[0],)), np.zeros((outliers.shape[0],))), axis = 0)
 
                 # write noisy data file
-                np.savetxt((test_params['save_path'] + '/datasets/test_' + str(test_id) + '.txt'), noisy_data)
+                
+                np.savetxt(f'{batch_save_path}/datasets/test_{test_id}.txt', noisy_data)
                 # write original data file (for plotting pourposes)
-                # np.savetxt((test_params['save_path'] + '/datasets/test_' + str(test_id) + '_original.txt'), noisy_data)
-                # np.savetxt((test_params['save_path'] + '/datasets/test_' + str(test_id) + '_inliers.txt'), inliers_mask)
+                # np.savetxt(f'{batch_save_path}/datasets/test_{test_id}_original.txt', noisy_data)
+                # np.savetxt(f'{batch_save_path}/datasets/test_{test_id}_inliers.txt', inliers_mask)
             
             except RuntimeError:
                 print(f'Data for test {test_id} has not been generated')
