@@ -184,6 +184,10 @@ if __name__ == '__main__':
             params_original = model.get_general_params(params_original)
             params_estimated = model.get_general_params(params_estimated)
 
+            if model.__class__ == EllipseModel:
+                _, rel_error = _get_estimation_error(params_original, params_estimated)
+                estimation_error = np.max(rel_error)
+            
             if model.__class__ == HomographyModel:
                 estimation_error = _compute_RMSE(params_original, params_estimated, data, original_inliers)
             
