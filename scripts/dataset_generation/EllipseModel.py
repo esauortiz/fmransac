@@ -1,6 +1,7 @@
+from dataset_generation.utils import _is_inlier, _is_in_bbox, _check_dim_match, _get_bbox_from_value
+from estimation.fit import EllipseModel
 import numpy as np
 import random
-from dataset_generation.utils import _is_inlier, _is_in_bbox, _check_dim_match, _get_bbox_from_value
 
 def _gaussian_noise(data, original_model, dataset_params, seed = None):
 	"""Adds gaussian distributed noise
@@ -50,6 +51,13 @@ def _gaussian_noise(data, original_model, dataset_params, seed = None):
 	#return np.stack(noisy_data, axis = 0)
 	return noisy_data
 
+def _get_model_dataset(model_params, model_samples, batch_params, seed = None, print_model_params = False):
+	model = EllipseModel(model_params)
+	model_bbox = _get_bbox_from_value(batch_params['dataset_params']['model_bbox'], dim = 2)
+	if print_model_params == True:
+		a, b, c, d, f, g = model.get_general_params(model_params)
+		print(f'Original model params: {"%.3f" % a} | {"%.3f" % b} | {"%.3f" % c} | {"%.3f" % d} | {"%.3f" % f} | {"%.3f" % g}')
+	return model.predict_xy(t = np.linspace(0, 2 * np.pi, model_samples), model_bbox = model_bbox)
 
 if __name__ == '__main__':
 	True

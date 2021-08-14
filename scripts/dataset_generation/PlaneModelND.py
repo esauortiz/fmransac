@@ -1,6 +1,7 @@
+from dataset_generation.utils import _is_inlier, _is_in_bbox, _check_dim_match, _get_bbox_from_value
+from estimation.fit import PlaneModelND
 import numpy as np
 import random
-from dataset_generation.utils import _is_inlier, _is_in_bbox, _check_dim_match, _get_bbox_from_value
 
 def _gaussian_noise(data, original_model, dataset_params, seed = None):
 	""" Add noise points whose fitting errors 
@@ -50,6 +51,15 @@ def _gaussian_noise(data, original_model, dataset_params, seed = None):
 			
 	#return np.stack(noisy_data, axis = 0)
 	return noisy_data
+
+def _get_model_dataset(model_params, model_samples, batch_params, seed = None, print_model_params = False):
+	model = PlaneModelND(model_params)
+	dim = len(model_params[0]) # dim = number of components of origin
+	model_bbox = _get_bbox_from_value(batch_params['dataset_params']['model_bbox'], dim)
+	if print_model_params == True:
+		Ao, Bo, Co = model.get_general_params(model_params)
+		print(f'Original model params: {"%.2f" % Ao}x + {"%.2f" % Bo}y + {"%.2f" % Co} = 0')
+	return model.predict(model_bbox, model_samples, seed = seed)
 
 if __name__ == '__main__':
 	True
