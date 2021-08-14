@@ -13,7 +13,7 @@ if __name__ == '__main__':
 
 	model_class = sys.argv[1]
 	batch_id = sys.argv[2]
-	test_id = sys.argv[3]
+	test_id = int(sys.argv[3][5:])
 	estimator = sys.argv[4]
 	if estimator == "None": estimator = None
 
@@ -31,7 +31,7 @@ if __name__ == '__main__':
 	save_path = plot_params['save_path']
 	save_figure = plot_params['save_figure']
 	model_label = nc['text'][model_class]
-	plot_title = f'{model_label}_B{str(sys.argv[2])[6:]}T{str(sys.argv[3])}_{str(sys.argv[4])}'
+	plot_title = f'{model_label}_B{str(sys.argv[2])[6:]}T{str(sys.argv[3][5:])}_{str(sys.argv[4])}' # e.g. PM_B1T12_RANSAC.png
 	
 	fig_size = plot_params['fig_size'] # [width, height] size in cm
 	fig_size[0] *= cm
@@ -314,6 +314,6 @@ if __name__ == '__main__':
 	if save_figure == True:
 		print(f'Table saved in: {save_path}')
 		print(f'Tex file name: {plot_title} with .pdf extension PRINTED')
-		plt.savefig(f'{save_path}/{plot_title}.pdf', bbox_inches='tight', pad_inches=0.01, dpi=300)
+		plt.savefig(f'{save_path}/{plot_title}.png', bbox_inches='tight', pad_inches=0.01, dpi=300)
 	else:
 		plt.show()	
