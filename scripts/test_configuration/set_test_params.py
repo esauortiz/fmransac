@@ -1,8 +1,6 @@
 import numpy as np
 import random
-import yaml
-import io
-import os
+import sys, os, io, yaml
 
 from test_configuration.utils import _read_yaml
 
@@ -33,10 +31,13 @@ if __name__ == '__main__':
     
     print('[*] Setting tests parameters ...')
 
+    model_class = sys.argv[1]
+    group_id = sys.argv[2]
+
     # read batch group params
     current_path = os.path.dirname(os.path.realpath(__file__))
-    batch_group_params = _read_yaml(f'{current_path}/params/batch_group.yaml')
-    save_path = batch_group_params['group_params']['save_path']
+    tests_path = _read_yaml(f'{current_path}/params/tests_path.yaml')['path']
+    batch_group_params = _read_yaml(f'{tests_path}/{model_class}/00_batch_groups/{group_id}/batch_group_params.yaml')
     n_batches = batch_group_params['group_params']['n_batches']
     initial_batch_id = batch_group_params['group_params']['initial_batch_id']
     n_tests = batch_group_params['group_params']['n_tests']
@@ -44,7 +45,7 @@ if __name__ == '__main__':
 
     for batch_id in range(n_batches):
         # read batch params
-        batch_params = _read_yaml(f'{save_path}/{model_class}/batch_{initial_batch_id + batch_id}/batch_params.yaml')
+        batch_params = _read_yaml(f'{tests_path}/{model_class}/batch_{initial_batch_id + batch_id}/batch_params.yaml')
         model_params = batch_params['model_params']
 
         for test_id in range(n_tests):
@@ -118,7 +119,6 @@ if __name__ == '__main__':
             # Define data
             payload = {
                 'test_id': test_id,
-                'save_path' : f'{save_path}/{model_class}/batch_{initial_batch_id + batch_id}',
                 'model_params' : {
                     'model': model_class,
                     'model_samples' : model_samples,
@@ -129,7 +129,6 @@ if __name__ == '__main__':
             }
 
             # Write YAML file
-            file = f'{save_path}/{model_class}/batch_{initial_batch_id + batch_id}/tests_params/test_{test_id}.yaml'
+            file = f'{tests_path}/{model_class}/batch_{initial_batch_id + batch_id}/tests_params/test_{test_id}.yaml'
             with io.open(file, 'w', encoding='utf8') as outfile:
                 yaml.dump(payload, outfile, default_flow_style=False, allow_unicode=True)
-

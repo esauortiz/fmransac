@@ -1,17 +1,18 @@
-import yaml
-import io
-import os
-
 from scipy.stats.distributions import chi2
 from test_configuration.utils import _read_yaml
+import io, os, sys, yaml
 
 if __name__ == '__main__':
+
 	print('[*] Setting batch parameters ...')
+	
+	model_class = sys.argv[1]
+	group_id = sys.argv[2]
 
 	# batch group params
 	current_path = os.path.dirname(os.path.realpath(__file__))
-	batch_group_params = _read_yaml(f'{current_path}/params/batch_group.yaml')
-	save_path 		 = batch_group_params['group_params']['save_path']
+	tests_path = _read_yaml(f'{current_path}/params/tests_path.yaml')['path']
+	batch_group_params = _read_yaml(f'{tests_path}/{model_class}/00_batch_groups/{group_id}/batch_group_params.yaml')
 	initial_batch_id = batch_group_params['group_params']['initial_batch_id']
 	model_class 	 = batch_group_params['group_params']['model_class']
 	n_batches 		 = batch_group_params['group_params']['n_batches']
@@ -44,7 +45,7 @@ if __name__ == '__main__':
 		# based on dataset standard deviation (sd)
 	if ransac_params['residual_kappa'][0] != 0:
 		threshold = []
-		print('Thereshold values will be computed based on dataset standard deviation (sd)')
+		print('    Thereshold values will be computed based on dataset `standard deviation` and `kappa` multiplier')
 		for kappa, sd in zip(ransac_params['residual_kappa'], dataset_params['sd']):
 			threshold.append(kappa*sd)
 		ransac_params['residual_threshold'] = threshold
@@ -53,20 +54,19 @@ if __name__ == '__main__':
 		# assuming a chi2 distribution of the fitting errors
 	if ransac_params['inlier_prob'][0] != 0:
 		threshold = []
-		print('Thereshold values will be computed assuming a chi2 distribution of the fitting errors')
+		print('    Thereshold values will be computed assuming a chi2 distribution of the fitting errors')
 		for inlier_prob, df, sd in zip(ransac_params['inlier_prob'], ransac_params['df'], dataset_params['sd']):
 			threshold.append(((sd**2)*float(chi2.ppf(0.997, df=sd)))**0.5)
 		ransac_params['residual_threshold'] = threshold
 
 		# if theta == 0 then threshold values are chosen as theta values
 	if ransac_params['theta'][0] == 0:
-		print('Threshold values are chosen as theta values')
+		print('    Threshold values are chosen as theta values')
 		ransac_params['theta'] = ransac_params['residual_threshold']
 
 	for i in range(n_batches):
 		batch_id = f'batch_{initial_batch_id + i}'
 		batch_params = {
-			'save_path' : f'{save_path}/{model_class}/{batch_id}',
 			'batch_id' : batch_id,
 			'n_tests' : n_tests,
 			'model_params' : model_params,
@@ -97,5 +97,5 @@ if __name__ == '__main__':
 		}
 
 		# Write YAML file
-		with io.open(f'{save_path}/{model_class}/{batch_id}/batch_params.yaml', 'w', encoding='utf8') as outfile:
+		with io.open(f'{tests_path}/{model_class}/{batch_id}/batch_params.yaml', 'w', encoding='utf8') as outfile:
 			yaml.dump(batch_params, outfile, default_flow_style=False, allow_unicode=True)
