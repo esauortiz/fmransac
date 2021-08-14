@@ -41,8 +41,8 @@ def _uniform_noise(data, original_model, dataset_params, seed = None):
 	-------
 	noisy data : (N, dim) array
 	"""
-	np.random.seed(None)
-	random.seed(None)
+	np.random.seed(seed)
+	random.seed(seed)
 
 	origin = data.mean(axis=0)
 	dataset_dim = np.size(origin)
