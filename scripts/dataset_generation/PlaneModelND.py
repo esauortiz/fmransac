@@ -59,7 +59,7 @@ def _get_model_dataset(model_params, model_samples, model_bbox, seed = None, pri
 	if print_model_params == True:
 		Ao, Bo, Co = model.get_general_params(model_params)
 		print(f'Model params: {"%.2f" % Ao}x + {"%.2f" % Bo}y + {"%.2f" % Co} = 0')
-	return np.sort(model.predict(model_bbox, model_samples, seed = seed), axis = 0)
-
+	dataset = model.predict(model_bbox, model_samples, seed = seed)
+	return dataset[dataset[:, 1].argsort(kind='mergesort')]
 if __name__ == '__main__':
 	True
