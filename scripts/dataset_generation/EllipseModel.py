@@ -51,9 +51,9 @@ def _gaussian_noise(data, original_model, dataset_params, seed = None):
 	#return np.stack(noisy_data, axis = 0)
 	return noisy_data
 
-def _get_model_dataset(model_params, model_samples, batch_params, seed = None, print_model_params = False):
+def _get_model_dataset(model_params, model_samples, model_bbox, seed = None, print_model_params = False):
 	model = EllipseModel(model_params)
-	model_bbox = _get_bbox_from_value(batch_params['dataset_params']['model_bbox'], dim = 2)
+	model_bbox = _get_bbox_from_value(model_bbox, dim = 2)
 	if print_model_params == True:
 		a, b, c, d, f, g = model.get_general_params(model_params)
 		print(f'Original model params: {"%.3f" % a} | {"%.3f" % b} | {"%.3f" % c} | {"%.3f" % d} | {"%.3f" % f} | {"%.3f" % g}')
