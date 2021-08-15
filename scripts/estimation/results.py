@@ -155,7 +155,8 @@ if __name__ == '__main__':
                 test_params = _read_yaml(f'{batch_save_path}/tests_params/test_{test_id}.yaml')
                 params_original = test_params['model_params']['params']
                 params_estimated = np.loadtxt(f'{batch_save_path}/results/{estimator}/test_{test_id}_params.txt')
-                iterations = np.loadtxt(f'{batch_save_path}/results/{estimator}/test_{test_id}_iterations.txt')
+                if estimator != 'default':
+                    iterations = np.loadtxt(f'{batch_save_path}/results/{estimator}/test_{test_id}_iterations.txt')
 
                 if model.__class__ == HomographyModel:
                     # read dataset and original inliers to compute RMSE
@@ -198,7 +199,7 @@ if __name__ == '__main__':
             abs_errors = np.append(abs_errors, abs_error)
             rel_errors = np.append(rel_errors, rel_error)
             # some additional info
-            iterations_list = np.append(iterations_list, iterations)
+            if estimator != 'default': iterations_list = np.append(iterations_list, iterations)
             
             finished_tests += 1
 
@@ -210,12 +211,12 @@ if __name__ == '__main__':
         estimation_errors = estimation_errors.reshape(n_successful_tests, -1)
         abs_errors = abs_errors.reshape(n_successful_tests, -1)
         rel_errors = rel_errors.reshape(n_successful_tests, -1)
-        iterations_list = iterations_list.reshape(n_successful_tests, -1)
+        if estimator != 'default': iterations_list = iterations_list.reshape(n_successful_tests, -1)
 
         np.savetxt(f'{batch_save_path}/results/{estimator}/00_estimation_errors.txt', estimation_errors)
         np.savetxt(f'{batch_save_path}/results/{estimator}/00_abs_errors.txt', abs_errors)
         np.savetxt(f'{batch_save_path}/results/{estimator}/00_rel_errors.txt', rel_errors)
-        np.savetxt(f'{batch_save_path}/results/{estimator}/00_iterations.txt', iterations_list)
+        if estimator != 'default': np.savetxt(f'{batch_save_path}/results/{estimator}/00_iterations.txt', iterations_list)
 
         finished_estimators += 1
     
