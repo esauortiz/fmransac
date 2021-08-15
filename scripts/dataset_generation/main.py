@@ -26,6 +26,7 @@ if __name__ == '__main__':
 
         test_params = _read_yaml(f'{batch_save_path}/tests_params/test_{test_id}.yaml')
         model_params = test_params['model_params']
+        seed = test_id
 
         # generate original model data
         if model_class == 'PlaneModelND':
@@ -34,7 +35,7 @@ if __name__ == '__main__':
             dim = len(params[0]) # dim = number of components of origin
             model_samples = model_params['model_samples']
             model_bbox = _get_bbox_from_value(dataset_params['model_bbox'], dim)
-            original_data = original_model.predict(model_bbox, model_samples, seed = test_id)
+            original_data = original_model.predict(model_bbox, model_samples, seed = seed)
             from dataset_generation.PlaneModelND import _gaussian_noise
 
         elif model_class == 'EllipseModel':
@@ -66,8 +67,8 @@ if __name__ == '__main__':
 
         if model_class in ['PlaneModelND', 'EllipseModel']:
             try:
-                inliers = _gaussian_noise(original_data, original_model, dataset_params, seed = test_id)
-                outliers = _uniform_noise(original_data, original_model, dataset_params, seed = test_id)
+                inliers = _gaussian_noise(original_data, original_model, dataset_params, seed = seed)
+                outliers = _uniform_noise(original_data, original_model, dataset_params, seed = seed)
                 noisy_data = np.concatenate((inliers, outliers), axis = 0)
                 inliers_mask = np.concatenate((np.ones((inliers.shape[0],)), np.zeros((outliers.shape[0],))), axis = 0)
 
