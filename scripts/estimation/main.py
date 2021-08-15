@@ -38,7 +38,7 @@ if __name__ == '__main__':
 
     estimators = []
     for estimator_name in estimators_names:
-        if estimator_name not in ['RANSAC', 'MSAC']:
+        if estimator_name not in ['RANSAC', 'MSAC', 'default']:
             variant = int(estimator_name[3])
             fuzzy_metric = eval(estimator_name[-2:])(n = n, theta = theta)
             estimators.append(FMR( min_samples, residual_threshold, max_trials, stop_probability, 
@@ -49,6 +49,8 @@ if __name__ == '__main__':
         elif estimator_name == 'MSAC':
             estimators.append(MSAC(min_samples, residual_threshold, max_trials, 
                                     stop_probability, outlier_ratio))
+        elif estimator_name == 'default':
+            estimators.append(None)
 
     def _run_test(test_id):
         global finished_tests
