@@ -202,7 +202,9 @@ if __name__ == '__main__':
 
 		# noisy dataset
 		noisy_data = np.loadtxt(f'{batch_save_path}/datasets/test_{test_id}.txt')
-		plot_limits = [-batch_params['dataset_params']['dataset_bbox'], batch_params['dataset_params']['dataset_bbox']]
+		dataset_bbox = batch_params['dataset_params']['dataset_bbox']
+		model_bbox = batch_params['dataset_params']['model_bbox']
+		plot_limits = [-dataset_bbox, dataset_bbox]
 
 		# read test params
 		test_params = _read_yaml(f'{batch_save_path}/tests_params/test_{test_id}.yaml')
@@ -213,7 +215,7 @@ if __name__ == '__main__':
 			from dataset_generation.PlaneModelND import _get_model_dataset
 		elif model_class == 'EllipseModel':
 			from dataset_generation.EllipseModel import _get_model_dataset
-		model_ori_dataset = _get_model_dataset(model_ori_params, model_samples, batch_params, seed = test_id, print_model_params = True)
+		model_ori_dataset = _get_model_dataset(model_ori_params, model_samples, model_bbox, seed = test_id, print_model_params = True)
 							
 		if estimator is not None:
 
@@ -226,7 +228,7 @@ if __name__ == '__main__':
 			outliers = inliers == False
 
 			# generate estimated model data
-			model_est_dataset = _get_model_dataset(model_est_params, model_samples, batch_params, seed = test_id, print_model_params = True)
+			model_est_dataset = _get_model_dataset(model_est_params, model_samples, model_bbox, seed = test_id, print_model_params = True)
 			
 			if(noisy_data.shape[1] == 2):
 			
