@@ -18,7 +18,7 @@ if __name__ == "__main__":
 	estimators = batch_group_params['group_params']['estimators_names']
 
 	remove_directories = False
-	#if input("    Do you want to remove previously created batch directories? (y/n): ") == 'y': remove_directories = True
+	if input("    Do you want to remove previously created batch directories? (y/n): ") == 'y': remove_directories = True
 
 	created_directories = []
 
