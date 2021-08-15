@@ -131,7 +131,8 @@ class RANSAC(object):
                 #dynamic_max_trials = _max_trials(np.sum(best_inliers), num_samples, min_samples, stop_probability)
                 #if num_trials >= dynamic_max_trials:
                 #	break
-
+        #np.savetxt(f'/home/esau/tfm/codigo_fuente/fmransac/debug/mss/G{self.max_trials}.txt',*samples)
+        #return sample_model, sample_model_inliers, sample_model_scores, 0
         # failure if inliers_num < min_samples
         if np.sum(best_inliers) < self.min_samples:
             best_model = None

@@ -1,6 +1,7 @@
-save_path: /home/esau/Documents
+save_path: /home/esau/tfm/codigo_fuente/fmransac/debug/png
+save_extension: .png
 save_figure: True
-fig_size: [3.75, 3.75] # [width, height] size in cm
+fig_size: [6.5, 6.5] # [width, height] size in cm
 plot_axis_ticks: False
 plot_legend: True
 plot_color_map_bar: False
@@ -14,5 +15,5 @@ model_estimated_line_style: '-'
 model_samples: 10000
 outlier_color: [1.00,0.00,0.00]
 inlier_color: [0.00,0.00,1.00]
-point_size: 2
+point_size: 4
 min_compatibility_value: 0.1

@@ -1,5 +1,5 @@
 from matplotlib import pyplot as plt
-from plot_and_tabulate.plot.utils import truncate_colormap
+from plot_and_tabulate.plot.utils import truncate_colormap, get_thresh_lines_dataset
 from test_configuration.utils import _read_yaml
 import matplotlib.cm as cmap
 import numpy as np
@@ -29,6 +29,7 @@ if __name__ == '__main__':
 	# plot parameters
 	cm = 1/2.54  # centimeters in inches
 	save_path = plot_params['save_path']
+	save_extension = plot_params['save_extension']
 	save_figure = plot_params['save_figure']
 	model_label = nc['text'][model_class]
 	plot_title = f'{model_label}_B{str(sys.argv[2])[6:]}T{str(sys.argv[3][5:])}_{str(sys.argv[4])}' # e.g. PM_B1T12_RANSAC.png
@@ -203,7 +204,8 @@ if __name__ == '__main__':
 		# noisy dataset
 		noisy_data = np.loadtxt(f'{batch_save_path}/datasets/test_{test_id}.txt')
 		dataset_bbox = batch_params['dataset_params']['dataset_bbox']
-		model_bbox = batch_params['dataset_params']['model_bbox']
+		model_bbox = batch_params['dataset_params']['model_bbox']*100
+		residual_threshold = batch_params['ransac_params']['residual_threshold']
 		plot_limits = [-dataset_bbox, dataset_bbox]
 
 		# read test params
@@ -258,9 +260,12 @@ if __name__ == '__main__':
 					ax.scatter(noisy_data[:, 0], noisy_data[:, 1], c = rgba_colors, s = point_size)
 					ax.scatter([], [], point_size, color=inlier_color, alpha=1, label='Inlier')
 					ax.scatter([], [], point_size, color=outlier_color, alpha=1, label='Outlier')
+
+					model_ori_dataset = np.array([model_ori_dataset[1,:],model_ori_dataset[-1,:]])
+					model_est_dataset = np.array([model_est_dataset[1,:],model_est_dataset[-1,:]])
 					ax.plot(model_ori_dataset[:, 0], model_ori_dataset[:, 1], color=model_ori_color, alpha=1, linestyle=model_ori_line_style ,linewidth=model_ori_line_width)
 					ax.plot(model_est_dataset[:, 0], model_est_dataset[:, 1], color=model_est_color, alpha=1, linestyle=model_est_line_style, linewidth=model_est_line_width)
-
+					
 				else: 
 					#setting axis limits
 					ax.set_xlim(plot_limits)
@@ -268,13 +273,28 @@ if __name__ == '__main__':
 					# Plotting original and estimated model first with empty data to reorder legend items
 					ax.plot([], [], color=model_ori_color, alpha=1, linestyle=model_ori_line_style, linewidth=model_ori_line_width, label='$'+nc['tex_eq']['model_original']+'$')
 					ax.plot([], [], color=model_est_color, alpha=1, linestyle=model_est_line_style, linewidth=model_est_line_width, label='$'+nc['tex_eq']['model_estimated']+'$')
+					ax.scatter([], [], point_size, color='lime', alpha=1, label='MSS')
 					ax.scatter([], [], point_size, color=inlier_color, alpha=1, label='Inlier')
 					ax.scatter([], [], point_size, color=outlier_color, alpha=1, label='Outlier')
 					ax.scatter(noisy_data[inliers, 0], noisy_data[inliers, 1], point_size, color=inlier_color, alpha=1,  zorder=0)
 					ax.scatter(noisy_data[outliers, 0], noisy_data[outliers, 1], point_size, color=outlier_color, alpha=1,  zorder=0)
+					model_ori_dataset = np.array([model_ori_dataset[1,:],model_ori_dataset[-1,:]])
+					model_est_dataset = np.array([model_est_dataset[1,:],model_est_dataset[-1,:]])
 					ax.plot(model_ori_dataset[:, 0], model_ori_dataset[:, 1], color=model_ori_color, alpha=1, linestyle=model_ori_line_style ,linewidth=model_ori_line_width, zorder = 1)
 					ax.plot(model_est_dataset[:, 0], model_est_dataset[:, 1], color=model_est_color, alpha=1, linestyle=model_est_line_style, linewidth=model_est_line_width)
-
+					thresh_line = get_thresh_lines_dataset(model_est_params, model_bbox, _get_model_dataset, residual_threshold, -1)
+					ax.plot(thresh_line[:, 0], thresh_line[:, 1], color=model_est_color, alpha=1, linestyle='dashed', linewidth=(model_est_line_width - 1))
+					thresh_line = get_thresh_lines_dataset(model_est_params, model_bbox, _get_model_dataset, residual_threshold, 1)
+					ax.plot(thresh_line[:, 0], thresh_line[:, 1], color=model_est_color, alpha=1, linestyle='dashed', linewidth=(model_est_line_width - 1))
+					"""
+					
+					ax.scatter(noisy_data[:, 0], noisy_data[:, 1], point_size, color = 'black', alpha=1,  zorder = 0)
+					ax.plot(model_est_dataset[:, 0], model_est_dataset[:, 1], color=model_est_color, alpha=1, linestyle=model_est_line_style, linewidth=model_est_line_width)
+					thresh_line = get_thresh_lines_dataset(model_est_params, model_bbox, _get_model_dataset, residual_threshold, -1)
+					ax.plot(thresh_line[:, 0], thresh_line[:, 1], color=model_est_color, alpha=1, linestyle='dashed', linewidth=(model_est_line_width - 1))
+					thresh_line = get_thresh_lines_dataset(model_est_params, model_bbox, _get_model_dataset, residual_threshold, 1)
+					ax.plot(thresh_line[:, 0], thresh_line[:, 1], color=model_est_color, alpha=1, linestyle='dashed', linewidth=(model_est_line_width - 1))
+					"""
 			else: 
 					ax = fig.add_subplot(111, projection='3d')
 					ax.scatter3D(noisy_data[inliers, 0], noisy_data[inliers, 1],  noisy_data[inliers, 2], color = inlier_color, alpha=1, label='Inlier')
@@ -288,6 +308,15 @@ if __name__ == '__main__':
 			# else only plot noisy dataset
 			if(noisy_data.shape[1] == 2):
 				ax.scatter(noisy_data[:, 0], noisy_data[:, 1], point_size, color = 'black', alpha=1,  zorder = 0)
+				"""
+				ax.plot([], [], color=model_ori_color, alpha=1, linestyle=model_ori_line_style, linewidth=model_ori_line_width, label='$'+nc['tex_eq']['model_original']+'$')
+				ax.plot([], [], color=model_est_color, alpha=1, linestyle=model_est_line_style, linewidth=model_est_line_width, label='$'+nc['tex_eq']['model_estimated']+'$')
+				ax.scatter([], [], point_size, color='lime', alpha=1, label='MSS')
+				ax.scatter([], [], point_size, color=inlier_color, alpha=1, label='Inlier')
+				ax.scatter([], [], point_size, color=outlier_color, alpha=1, label='Outlier')
+				mss = np.loadtxt(f'/home/esau/tfm/codigo_fuente/fmransac/debug/mss/G{batch_id[6:]}.txt')
+				ax.scatter(mss[:, 0], mss[:, 1], point_size*1.75, color = 'lime', alpha=1,  zorder = 1)
+				"""
 				ax.set_xlim(plot_limits)
 				ax.set_ylim(plot_limits)
 			else:
@@ -309,13 +338,16 @@ if __name__ == '__main__':
 		cbar.ax.set_yticklabels(['$\\phi=0$', '$\\phi=1$'])
 
 	if plot_legend == True:
-		leg = plt.legend(bbox_to_anchor=(1.06,1), loc="upper left", borderaxespad=0, framealpha=1, fancybox = False)
+		leg = plt.legend(bbox_to_anchor=(1.06,1), loc="upper left", fontsize = 10, borderaxespad=0, framealpha=1, fancybox = False)
 		leg.get_frame().set_edgecolor('black')
 		leg.get_frame().set_linewidth(0.5)
 
 	if save_figure == True:
 		print(f'Table saved in: {save_path}')
-		print(f'Tex file name: {plot_title} with .pdf extension PRINTED')
-		plt.savefig(f'{save_path}/{plot_title}.png', bbox_inches='tight', pad_inches=0.01, dpi=300)
+		print(f'Tex file name: {plot_title} with {save_extension} extension PRINTED')
+		if estimator is not None:
+			info = f'nº inliers: {np.sum(inliers)}\n$C$: {np.sum(outliers)}'
+			plt.text(28.5*cm, -15*cm, info, fontsize=10)
+		plt.savefig(f'{save_path}/{plot_title}{save_extension}', bbox_inches='tight', pad_inches=0.01, dpi=300)
 	else:
 		plt.show()	
