@@ -70,20 +70,20 @@ if __name__ == '__main__':
                 print(f'    Data for test_{test_id} not found')
                 return True
             
-        # default estimation (e.g. Total Least Squares)
-        # fit line using all data
-        model_d = model_class()
-        model_d.estimate(data)
-        #np.savetxt((save_path + 'default/test_' + test_id + '_params.txt'), model_d.params)
-
         for estimator_name, estimator in zip(estimators_names, estimators):
-            # robustly fit line only using inlier data (robust model)
-            model, inliers, scores, iterations = estimator.run(data, model_class, seed = test_id)
-            if model is not None:
-                np.savetxt(f'{batch_save_path}/results/{estimator_name}/test_{test_id}_inliers.txt', inliers)
-                np.savetxt(f'{batch_save_path}/results/{estimator_name}/test_{test_id}_params.txt', model.params)
-                np.savetxt(f'{batch_save_path}/results/{estimator_name}/test_{test_id}_iterations.txt', np.array([iterations]))
-                if estimator_name not in ['RANSAC', 'MSAC']:
+            # default estimation (e.g. Total Least Squares)
+            # fit line using all data
+            if estimator_name == 'default':
+                model = model_class()
+                model.estimate(data)
+                np.savetxt(f'{batch_save_path}/results/default/test_{test_id}_params.txt', model.params)
+            else:
+                # robustly fit line only using inlier data (robust model)
+                model, inliers, scores, iterations = estimator.run(data, model_class, seed = test_id)
+                if model is not None:
+                    np.savetxt(f'{batch_save_path}/results/{estimator_name}/test_{test_id}_inliers.txt', inliers)
+                    np.savetxt(f'{batch_save_path}/results/{estimator_name}/test_{test_id}_params.txt', model.params)
+                    np.savetxt(f'{batch_save_path}/results/{estimator_name}/test_{test_id}_iterations.txt', np.array([iterations]))
                     np.savetxt(f'{batch_save_path}/results/{estimator_name}/test_{test_id}_scores.txt', scores)
 
         with finished_tests.get_lock():
