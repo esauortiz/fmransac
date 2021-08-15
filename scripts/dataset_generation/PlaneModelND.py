@@ -58,7 +58,7 @@ def _get_model_dataset(model_params, model_samples, model_bbox, seed = None, pri
 	model_bbox = _get_bbox_from_value(model_bbox, dim)
 	if print_model_params == True:
 		Ao, Bo, Co = model.get_general_params(model_params)
-		print(f'Original model params: {"%.2f" % Ao}x + {"%.2f" % Bo}y + {"%.2f" % Co} = 0')
+		print(f'Model params: {"%.2f" % Ao}x + {"%.2f" % Bo}y + {"%.2f" % Co} = 0')
 	return np.sort(model.predict(model_bbox, model_samples, seed = seed))
 
 if __name__ == '__main__':
