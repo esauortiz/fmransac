@@ -78,7 +78,9 @@ if __name__ == '__main__':
             if estimator_name == 'default':
                 model = model_class()
                 model.estimate(data)
-                np.savetxt(f'{batch_save_path}/results/default/test_{test_id}_params.txt', model.params)
+                model_residuals = model.residuals(data)
+                np.savetxt(f'{batch_save_path}/results/{estimator_name}/test_{test_id}_params.txt', model.params)
+                np.savetxt(f'{batch_save_path}/results/{estimator_name}/test_{test_id}_residuals.txt', model_residuals)
             else:
                 # robustly fit line only using inlier data (robust model)
                 model, inliers, scores, iterations = estimator.run(data, model_class, seed = test_id)
@@ -87,6 +89,8 @@ if __name__ == '__main__':
                     np.savetxt(f'{batch_save_path}/results/{estimator_name}/test_{test_id}_params.txt', model.params)
                     np.savetxt(f'{batch_save_path}/results/{estimator_name}/test_{test_id}_iterations.txt', np.array([iterations]))
                     np.savetxt(f'{batch_save_path}/results/{estimator_name}/test_{test_id}_scores.txt', scores)
+                    model_residuals = model.residuals(data)
+                    np.savetxt(f'{batch_save_path}/results/{estimator_name}/test_{test_id}_residuals.txt', model_residuals)
 
         with finished_tests.get_lock():
             finished_tests.value += 1
