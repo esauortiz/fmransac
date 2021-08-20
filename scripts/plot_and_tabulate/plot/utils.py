@@ -1,7 +1,6 @@
-import matplotlib.colors as colors
 from matplotlib.patches import ConnectionPatch
 import matplotlib.cm as cmap
-
+import matplotlib.colors as colors
 import numpy as np
 
 def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
@@ -11,11 +10,57 @@ def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
     return new_cmap
 
 def get_thresh_lines_dataset(model_params, model_bbox, _get_model_dataset, threshold, sign):
+	""" returns 2D threshold lines (two 2D points) at both sides
+		of the estimated model with model_params parameters	
+	Parameters
+	----------
+	model_params : (2, 2) array
+		set of [origin, normal_vector] parameters
+	model_bbox : int
+		Half the length of the side of the square 
+		containing the dataset
+	_get_model_dataset : function
+		returns model dataset i.e. a 2D line following 
+		model_params parameters
+	threshold : float
+		residual threshold
+	sign : int
+		determines the side at which the threshold line is
+	Returns
+	-------
+	residuals : (2, 2) array
+		2D threshold lines (two 2D points) at both sides
+		of the estimated model with model_params parameters	
+	"""
 	origin, normal_vector = np.copy(model_params)
 	normal_vector /= np.linalg.norm(normal_vector)
 	origin += normal_vector * threshold * sign
 	data = _get_model_dataset([origin, normal_vector], 10000, model_bbox, seed = 0)
 	return np.array((data[1,:], data[-1,:]))
+
+def plot_residuals_lines(ax, model_params, dataset, residuals, color):
+	""" plots 2D lines between each dataset's point and the model
+	Parameters
+	----------
+	ax :
+		ax where to plot
+	model_params : (2, 2) array
+		set of [origin, normal_vector] parameters
+	dataset : (N, 2) array
+		noisy dataset
+	residuals : (N, 2) array
+		fitting errors
+	color : str or rgb as (3,) array
+		lines color
+	Returns
+	-------
+	"""
+	origin, normal_vector = model_params
+	normal_vector /= np.linalg.norm(normal_vector)
+	for point, residual in zip(dataset, residuals):
+		model_point = point - residual * normal_vector
+		residual_line = np.array((point, model_point))
+		ax.plot(residual_line[:, 0], residual_line[:, 1], color=color, alpha=1, linestyle='-', linewidth=0.75, zorder = -1)
 
 def plot_matchings(ax1, ax2, fp, tp, inliers, inliers_flag, rgba_colors = None):
 
