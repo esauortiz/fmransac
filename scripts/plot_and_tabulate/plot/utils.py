@@ -35,7 +35,7 @@ def get_thresh_lines_dataset(model_params, model_bbox, _get_model_dataset, thres
 	origin, normal_vector = np.copy(model_params)
 	normal_vector /= np.linalg.norm(normal_vector)
 	origin += normal_vector * threshold * sign
-	data = _get_model_dataset([origin, normal_vector], 10000, model_bbox, seed = 0)
+	data = _get_model_dataset([origin, normal_vector], 10000, model_bbox, seed = 0, output = None)
 	return np.array((data[1,:], data[-1,:]))
 
 def plot_residuals_lines(ax, model_params, dataset, residuals, color):
