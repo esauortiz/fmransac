@@ -923,7 +923,7 @@ class HomographyModel(BaseModel):
         H = V[8].reshape((3,3))    
         
         # decondition
-        H = np.dot(np.linalg.inv(C2),np.dot(H,C1))
+        # H = np.dot(np.linalg.inv(C2),np.dot(H,C1))
         
         # normalize and return
         return H / H[2,2]
