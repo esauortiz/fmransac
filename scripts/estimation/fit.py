@@ -221,9 +221,11 @@ class PlaneModelND(BaseModel):
         #OWLS (if w = np.ones((n_points,)) results will be the same as TLS)
         if w is None:
             w = np.ones(np.shape(data[:,0]), dtype = int)
-            w = w / np.sum(w)
         elif w.shape[0] != data.shape[0]:
             raise ValueError(f'Weigths array shape does not match data shape. w.shape[0] = {w.shape[0]} | data.shape[0] = {data.shape[0]}')
+        # normalize weights
+        w = w / np.sum(w)
+
         """
         # particular solution 2D hiperplane: 2D line
         x = data[:,0]
@@ -584,6 +586,9 @@ class EllipseModel(BaseModel):
         else:
             w = np.diag(w)
 
+        # normalize weights
+        w = w / np.sum(w)
+
         # forming scatter matrix [eqn. 17] from [1]
         S1 = D1.T @ w @ D1
         S2 = D1.T @ w @ D2
@@ -941,6 +946,10 @@ class HomographyModel(BaseModel):
 
         if w is None:
             w = np.ones((tp.shape[0],))
+
+        # normalize weights
+        w = w / np.sum(w)
+
         # see simestimator.pdf for detailed derivation
         
         N = tp.shape[0]
