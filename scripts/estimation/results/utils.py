@@ -128,7 +128,7 @@ def get_metric(values, stat_type):
     """
 
     if stat_type[0] == 'P':
-        percentile = stat_type[1:]
+        percentile = int(stat_type[1:])
         return np.percentile(values, percentile)
     elif stat_type == 'mean':
         return np.mean(values)

@@ -29,19 +29,18 @@ if __name__ == '__main__':
 
     for batch_id in range(n_batches):
         # read batch params
-        batch_save_path = f'{tests_path}/{model_class}/{initial_batch_id + batch_id}'
+        batch_save_path = f'{tests_path}/{model_class}/batch_{initial_batch_id + batch_id}'
         batch_params = _read_yaml(f'{batch_save_path}/batch_params.yaml')            
         n_tests = batch_params['n_tests']
 
         batch_row = []
         for estimator in estimators_names:
             #read results
-            #/home/esau/tfm/tests/PlaneModelND/batch_1/results
-            results = np.loadtxt(f'{batch_save_path}/results/{estimator}/00_{metric}')
-            metric = get_metric(results, stat_type)
-            batch_row.append(metric)
+            results = np.loadtxt(f'{batch_save_path}/results/{estimator}/00_{metric}.txt')
+            metric_value = get_metric(results, stat_type)
+            batch_row.append(metric_value)
         
         table[batch_id] = batch_row
     
     # save table
-    np.savetxt(table, f'{tests_path}/{model_class}/00_batch_groups/{group_id}/results_tables/{metric}_{stat_type}.txt')
+    np.savetxt(f'{tests_path}/{model_class}/00_batch_groups/{group_id}/results_tables/{metric}_{stat_type}.txt', table)
