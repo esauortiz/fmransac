@@ -1,4 +1,3 @@
-from typing import Iterator
 from estimation.fit import EllipseModel, PlaneModelND, HomographyModel
 from estimation.utils import get_residuals
 from test_configuration.utils import _read_yaml
