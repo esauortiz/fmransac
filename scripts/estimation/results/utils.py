@@ -3,6 +3,7 @@ from estimation.utils import get_residuals
 
 import numpy as np
 
+# results main utils
 def _get_estimation_error(params_original, params_estimated):
     """Computes absolute and relative error
     Parameters
@@ -111,7 +112,7 @@ def _compute_RMSE(params_original, params_estimated, data, inliers):
 	RMSE = np.sqrt(np.mean(squared_error[inliers]))
 	return RMSE
 
-
+# tabulate utils
 def get_metric(values, stat_type):
     """ Returns metric given an (N,) array
         and a statistical value type as string
@@ -134,3 +135,28 @@ def get_metric(values, stat_type):
         return np.mean(values)
     elif stat_type == 'sd':
         return np.std(values)
+
+def get_row_labels(batch_group_params):
+    """ Given a dictionary of params will return which parameter
+        has a different value along all the batches in the batch
+        group
+    Parameters
+    ----------
+    batch_group_params : dictionary
+        parameters of the batch group
+    Returns
+    -------
+    column_labels: (n_batches + 1, ) array
+    """
+    dataset_params = batch_group_params['dataset_params']
+    ransac_params = batch_group_params['ransac_params']
+    params = {**dataset_params, **ransac_params} # merge two parameters dictionaries
+    column_labels = [None]
+
+    for key in params: # search which parameter's values varies along batches
+        if len(params[key]) > 1: column_labels[0] = key
+
+    # append parameter's values
+    for value in params[column_labels[0]]: column_labels.append(value)    
+
+    return column_labels
