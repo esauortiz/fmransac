@@ -2,3 +2,9 @@ venv/
 *.pyc
 *.pyo
 sh_files/
+*.sh
+debug/
+plot_params_1.yaml
+plot_params_2.yaml
+plot_params_3.yaml
+plot_params_4.yaml
