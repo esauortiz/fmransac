@@ -7,9 +7,26 @@ text:
 
 # latex equations
 tex_eq:
-  model_estimated : M_{\widehat{\Theta}}
-  model_original : M_{{\Theta}^*}
+  model_estimated : \mathcal{M}_{\widehat{\Theta}}
+  model_original : \mathcal{M}_{{\Theta}^*}
 
-# latex macros
+  # estimators
+  RANSAC: RANSAC
+  MSAC: MSAC
+  FMR2_M1: \text{FMR2}_{M_1}
+  FMR2_M2: \text{FMR2}_{M_2}
+  FMR2_M3: \text{FMR2}_{M_3}
+  FMR2_M4: \text{FMR2}_{M_4}
+  FMR4_M1: \text{FMR4}_{M_1}
+  FMR4_M2: \text{FMR4}_{M_2}
+  FMR4_M3: \text{FMR4}_{M_3}
+  FMR4_M4: \text{FMR4}_{M_4}
+
+  # metrics
+  estimation_errors: Error $\varepsilon$
+  abs_errors: Abs. errors
+  rel_errors: Rel. errors
+
+  # latex macros
 tex_macros:
   mymacro : fun
