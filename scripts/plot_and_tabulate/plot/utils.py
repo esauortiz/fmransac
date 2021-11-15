@@ -3,6 +3,8 @@ import matplotlib.cm as cmap
 import matplotlib.colors as colors
 import numpy as np
 
+# single_test.py
+
 def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
     new_cmap = colors.LinearSegmentedColormap.from_list(
         'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval),
@@ -103,3 +105,24 @@ def get_projection(params, data, inliers):
 	estimated_projection[:,0] /= estimated_projection[:,2]
 	estimated_projection[:,1] /= estimated_projection[:,2]
 	return estimated_projection[:,:-1]
+
+# percentiles.py
+def get_results_data(estimators, metric, results_path):
+	""" returns estimator's tests results for a metric
+	Parameters
+	----------
+	estimators : (N, ) list
+		list of estimators
+	metric : str
+		metric in {'abs_errors', 'rel_errors', 'estimation_errors'}
+	results_path : str
+		folder containing results
+	Returns
+	-------
+	results_data : (N, M) array
+	"""
+	results_data = []
+	for estimator in estimators:
+		data = np.loadtxt(f'{results_path}/{estimator}/00_{metric}.txt')
+		results_data.append(data)
+	return np.array(results_data)
