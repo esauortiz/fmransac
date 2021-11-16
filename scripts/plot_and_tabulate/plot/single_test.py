@@ -11,13 +11,18 @@ if __name__ == '__main__':
 
 	# usage
 	# python single_test.py model_class batch_id test_id estimator figure_label
+	# example
+	# python single_test.py PlaneModelND batch_1 test_36 RANSAC 
 
 	model_class = sys.argv[1]
 	batch_id = sys.argv[2]
 	test_id = int(sys.argv[3][5:])
 	estimator = sys.argv[4]
 	if estimator == "None": estimator = None
-	figure_label = sys.argv[5]
+	try:
+		figure_label = "_" + sys.argv[5]
+	except:
+		figure_label = ""
 
 	# read batch parameters, plot parameters and naming convention
 	current_path = os.path.dirname(os.path.realpath(__file__))
@@ -36,7 +41,7 @@ if __name__ == '__main__':
 	output = plot_params['output']
 	model_label = nc['text'][model_class]
 	#plot_title = 'dataset_w_outliers_w_ori_model_w_residuals'
-	plot_title = f'{model_label}_B{str(batch_id)[6:]}T{str(test_id)}_{str(estimator)}_{figure_label}' # e.g. PM_B1T12_RANSAC_{label}.png
+	plot_title = f'{model_label}_B{str(batch_id)[6:]}T{str(test_id)}_{str(estimator)}{figure_label}' # e.g. PM_B1T12_RANSAC_{label}.png
 	
 	fig_size = plot_params['fig_size'] # [width, height] size in cm
 	fig_size[0] *= cm
@@ -55,8 +60,6 @@ if __name__ == '__main__':
 	point_size = plot_params['point_size']
 	force_plot_legend = plot_params['force_plot_legend']
 
-	#plot_params = _read_yaml(f'{current_path}/plot_params_{figure_label}.yaml')
-	
 	plot_axis_ticks = plot_params['plot_axis_ticks']
 	plot_color_map_bar = plot_params['plot_color_map_bar']
 	plot_compatibilities = plot_params['plot_compatibilities']
