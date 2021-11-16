@@ -100,7 +100,7 @@ class RANSAC(object):
 
         #for the first run use initial guess of inliers
         spl_idxs = random_state.choice(num_samples, self.min_samples, replace=False)
-
+        
         for num_trials in range(self.max_trials):
             #do sample selection according data pairs
             samples = [d[spl_idxs] for d in data]
@@ -131,8 +131,10 @@ class RANSAC(object):
                 #dynamic_max_trials = _max_trials(np.sum(best_inliers), num_samples, min_samples, stop_probability)
                 #if num_trials >= dynamic_max_trials:
                 #	break
-        #np.savetxt(f'/home/esau/tfm/codigo_fuente/fmransac/debug/mss/G{self.max_trials}.txt',*samples)
+        
+        #np.savetxt(f'/home/esau/tfm/slides/mss/G{self.max_trials}.txt',*samples)
         #return sample_model, sample_model_inliers, sample_model_scores, 0
+        
         # failure if inliers_num < min_samples
         if np.sum(best_inliers) < self.min_samples:
             best_model = None
@@ -202,6 +204,7 @@ class FMR(RANSAC):
         new_model = model_class()
 
         # normalize scores and estimate new_model
+
         if best_inliers is None:
             scores = scores / np.sum(scores)
             new_model.estimate(*data, scores)
@@ -220,7 +223,7 @@ class FMR(RANSAC):
                 return True
             return False
 
-        if (_check_convergence(prev_params, new_model.params) == True) or iterations > self.t_max:
+        if (_check_convergence(prev_params, new_model.params) == True) or iterations >= self.t_max:
             return new_model, new_scores, iterations
         else:
             return self._iterative_reestimation(data, model_class, new_model,
@@ -318,7 +321,10 @@ class FMR(RANSAC):
                 #dynamic_max_trials = _max_trials(np.sum(best_inliers), num_samples, min_samples, stop_probability)
                 #if num_trials >= dynamic_max_trials:
                 #	break
-
+        
+        #np.savetxt(f'/home/esau/tfm/slides/mss/{self.__class__.__name__}{self.variant}_{self.fuzzy_metric.__class__.__name__}/G{self.max_trials}.txt',*samples)
+        #return sample_model, sample_model_inliers, sample_model_scores, 0
+        
         # failure if inliers_num < min_samples
         if np.sum(best_inliers) < self.min_samples:
             best_model = None
@@ -328,7 +334,9 @@ class FMR(RANSAC):
             return best_model, best_inliers, best_scores, improvements
 
         # estimate final model using all inliers
+        weights = np.copy(best_scores)
         if best_inliers is not None and self.t_max == 1:
+            iterations = 1
             if self.variant == 1:
                 # select inliers
                 data_inliers = [d[best_inliers] for d in data]
@@ -336,26 +344,26 @@ class FMR(RANSAC):
             else:
                 # weighted estimation
                 if self.variant == 4:
-                    best_scores = best_scores / np.sum(best_scores)
-                    best_model.estimate(*data, best_scores)
+                    weights = weights / np.sum(weights)
+                    best_model.estimate(*data, weights)
                 else:
                     data_inliers = [d[best_inliers] for d in data]
-                    scores_inliers = best_scores[best_inliers]
-                    scores_inliers = scores_inliers / np.sum(scores_inliers)
-                    best_scores = best_scores / np.sum(best_scores)
-                    best_model.estimate(*data_inliers, scores_inliers)
+                    weights_inliers = weights[best_inliers]
+                    weights_inliers = weights_inliers / np.sum(weights_inliers)
+                    best_model.estimate(*data_inliers, weights_inliers)
+
+
         # iterative reestimation with at most t_max iterations
         elif best_inliers is not None and self.t_max > 1:
+            iterations = 0
             if self.variant in [2, 3]:
                 # best_inliers as argument for first iteration
-                best_model, best_scores, iterations = self._iterative_reestimation( data, model_class, best_model, best_scores, 
+                best_model, best_scores, iterations = self._iterative_reestimation( data, model_class, best_model, weights, 
                                                                                     best_inliers = best_inliers, iterations = 0)
             elif self.variant == 4:
                 # best_inliers are not specified because whole dataset is used
                 best_model, best_scores, iterations = self._iterative_reestimation( data, model_class, best_model, 
-                                                                                    best_scores, iterations = 0)
-            elif self.variant == 1:
-                iterations = 0
-                
-        #best_residuals = best_model.residuals(*data)
+                                                                                    weights, iterations = 0)                
+        # update best model scores
+        best_scores = self._score_function(np.abs(best_model.residuals(*data)))
         return best_model, best_inliers, best_scores, iterations
