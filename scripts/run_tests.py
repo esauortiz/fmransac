@@ -18,15 +18,13 @@ if __name__ == '__main__':
     n_batches = batch_group_params['group_params']['n_batches']
 
     # tests configuration
-    #os.system(f'python  {current_path}/test_configuration/create_directories.py {model_class} {group_id}')
-    #os.system(f'python  {current_path}/test_configuration/set_batches_params.py {model_class} {group_id}')
-    # seed = 458 for RANSAC, MSAC and FMR1
-    # seed = 302 for RPI
-    #os.system(f'python  {current_path}/test_configuration/set_tests_params.py {model_class} {group_id}') 
+    os.system(f'python  {current_path}/test_configuration/create_directories.py {model_class} {group_id}')
+    os.system(f'python  {current_path}/test_configuration/set_batches_params.py {model_class} {group_id}')
+    os.system(f'python  {current_path}/test_configuration/set_tests_params.py {model_class} {group_id}') 
 
     # dataset generation
     print('[*] Generating datasets ...')
-    #for batch_id in range(n_batches): os.system(f'python  {current_path}/dataset_generation/main.py {model_class} batch_{initial_batch_id + batch_id}')
+    for batch_id in range(n_batches): os.system(f'python  {current_path}/dataset_generation/main.py {model_class} batch_{initial_batch_id + batch_id}')
 
     # estimation
     print('[*] Estimating parameters ...')
@@ -34,4 +32,4 @@ if __name__ == '__main__':
 
     # results
     print(f'[*] Generating results ...')
-    #for batch_id in range(n_batches): os.system(f'python  {current_path}/estimation/results/main.py {model_class} batch_{initial_batch_id + batch_id}')
+    for batch_id in range(n_batches): os.system(f'python  {current_path}/estimation/results/main.py {model_class} batch_{initial_batch_id + batch_id}')
