@@ -51,7 +51,7 @@ For example, running:
 ```sh
 python scripts/estimation/results/tabulate.py PlaneModelND G1 outlier_ratio estimation_errors mean
 ```
-will generate a table of results of PlaneModelND estimations which belongs to group G1 using outlier_ratio values as row labels. Table values are the mean of estimation errors (defined as the angle between ground truth normal vector and estimated normal vector in the case of PlaneModelND). Estimations with each estimator (RANSAC, MSAC or FMR variant) are grouped in columns. 
+will generate a table of results of PlaneModelND estimations which belongs to group G1 using outlier_ratio values as row labels. Table values are the mean of estimation errors (defined as the angle in degrees between ground truth normal vector and estimated normal vector in the case of PlaneModelND). Estimations with each estimator (RANSAC, MSAC or FMR variant) are grouped in columns. 
 
 Not configuring neither **tests batch group** nor **model class**, running estimation tests and running the example script to generate table of results will provide the following table:
 
