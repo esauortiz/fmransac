@@ -57,9 +57,9 @@ Not configuring neither **tests batch group** nor **model class**, running estim
 
 |outlier ratio|RANSAC|MSAC |FMR4_M2 |
 |-------------|------|-----|--------|
-|0.6          |0.96  |0.86 |0.66    |
-|0.5          |1.87  |1.29 |0.85    |
-|0.4          |2.81  |1.62 |1.01    |
-|0.2          |4.96  |2.57 |1.33    |
+|0.6          |4.96  |2.57 |1.33    |
+|0.5          |2.81  |1.62 |1.01    |
+|0.4          |1.87  |1.29 |0.85    |
+|0.2          |0.96  |0.86 |0.66    |
 
 showing that FM-based RANSAC is better at straight 2D line estimation in terms of accuracy with any outlier ratio between 0.2 and 0.6. 
