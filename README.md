@@ -40,3 +40,26 @@ Once **model class** and **tests batch group identifier** have been set up:
 ```sh
 python scripts/run_tests.py model_class group_id
 ```
+
+## Retrieve and save results
+A table of results could be generated with:
+```sh
+python scripts/estimation/results/tabulate.py model_class group_id rows_labels metric stat_type
+```
+For example, running:
+
+```sh
+python scripts/estimation/results/tabulate.py PlaneModelND G1 outlier_ratio estimation_errors mean
+```
+will generate a table of results of PlaneModelND estimations which belongs to group G1 using outlier_ratio values as row labels. Table values are the mean of estimation errors (defined as the angle between ground truth normal vector and estimated normal vector in the case of PlaneModelND). Estimations with each estimator (RANSAC, MSAC or FMRANSAC variant) are grouped in columns. 
+
+Not configuring neither **tests batch group** nor **model class**, running estimation tests and running the example script to generate table of results will provide the following table:
+
+|outlier ratio|RANSAC|MSAC |FMR4_M2 |
+|-------------|------|-----|--------|
+|0.6          |0.96  |0.86 |0.66    |
+|0.5          |1.87  |1.29 |0.85    |
+|0.4          |2.81  |1.62 |1.01    |
+|0.2          |4.96  |2.57 |1.33    |
+
+showing that FM-based RANSAC is better at straight 2D line estimation in terms of accuracy with any outlier ratio between 0.2 and 0.6. 
