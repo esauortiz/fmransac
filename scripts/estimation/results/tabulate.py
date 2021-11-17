@@ -58,7 +58,7 @@ def main():
             metric_value = get_metric(results, stat_type)
             batch_row.append(metric_value)
 
-        data[batch_id] = batch_row
+        data[-(batch_id + 1)] = batch_row # -(batch_id + 1) because reversed
 
     results_df = pd.DataFrame(data, index=row_labels, columns=estimators_names)
     
