@@ -1,5 +1,5 @@
-save_path: /home/esau/tfm/slides/latex/FIG
-save_extension: .pgf
+save_path: /home/esau/Pictures
+save_extension: .png
 save_figure: True
 fig_size: [7.5, 7.5] # [width, height] size in cm
 model_original_color: [0.65,0.65,0.65]
@@ -20,12 +20,12 @@ plot_legend: True
 force_plot_legend: False # when plot compatibilities only model ori/est are in legend
 plot_axis_ticks: False
 plot_color_map_bar: False
-plot_only_inliers: True
-plot_model_params: True
+plot_only_inliers: False
+plot_model_params: False
 
 plot_mss: False # please, configure path to mss data
 plot_threshold_lines: True
-plot_inliers_outliers: False
+plot_inliers_outliers: True
 plot_model_original: True
 plot_model_estimated: True
 plot_residuals: False # lines between points and estimated 2D line
