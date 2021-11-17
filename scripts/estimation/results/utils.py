@@ -133,7 +133,7 @@ def get_metric(values, stat_type):
         return np.percentile(values, percentile)
     elif stat_type == 'mean':
         return np.mean(values)
-    elif stat_type == 'sd':
+    elif stat_type == 'std':
         return np.std(values)
 
 def get_row_labels(batch_group_params):
