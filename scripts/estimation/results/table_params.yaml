@@ -1,2 +1,0 @@
-metric : estimation_errors # abs_errors, rel_errors, estimation_errors, iterations
-stat_type : P95 # any percentile beginning with P (e.g. P95), mean or std
