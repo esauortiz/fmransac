@@ -67,7 +67,7 @@ if __name__ == '__main__':
         else:
             try:
                 data = np.loadtxt(f'{batch_save_path}/datasets/test_{test_id}.txt', delimiter=" ")
-                #data = data[~np.isnan(data)]
+                data = data[~np.isnan(data)] # remove nans if needed
             except IOError:
                 print(f'    Data for test_{test_id} not found')
                 return True
