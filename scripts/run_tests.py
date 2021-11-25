@@ -32,4 +32,4 @@ if __name__ == '__main__':
 
     # results
     print(f'[*] Generating results ...')
-    for batch_id in range(n_batches): os.system(f'python  {current_path}/estimation/results/main.py {model_class} batch_{initial_batch_id + batch_id}')
+    #for batch_id in range(n_batches): os.system(f'python  {current_path}/estimation/results/main.py {model_class} batch_{initial_batch_id + batch_id}')
