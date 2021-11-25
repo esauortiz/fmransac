@@ -1,12 +1,13 @@
 from estimation.estimators import RANSAC, MSAC, FMR
 from estimation.fuzzy_metrics import M1, M2, M3, M4
 from estimation.fit import PlaneModelND, EllipseModel, HomographyModel
+from estimation.utils import _check_data_atleast_2D
 from test_configuration.utils import _read_yaml
 from multiprocessing import Pool, Value
 import numpy as np
 import sys, os
 
-if __name__ == '__main__':
+def main():
 
     model_class = str(sys.argv[1])
     batch_id = str(sys.argv[2])
@@ -71,7 +72,12 @@ if __name__ == '__main__':
             except IOError:
                 print(f'    Data for test_{test_id} not found')
                 return True
-            
+
+        try:
+            _check_data_atleast_2D(data)
+        except ValueError:
+            return True
+
         for estimator_name, estimator in zip(estimators_names, estimators):
             # default estimation (e.g. Total Least Squares)
             # fit line using all data
@@ -115,3 +121,6 @@ if __name__ == '__main__':
         p.map(_run_test, range(n_tests))
 
     print(' ')
+
+if __name__ == '__main__':
+    main()
