@@ -58,15 +58,15 @@ if __name__ == '__main__':
 
             except IOError:
                 n_successful_tests -= 1
-                print(f'    Test {str(id + 1)} is not considered in results')
+                print(f'    Test {str(test_id + 1)} is not considered in results')
                 continue
             except ValueError:
                 n_successful_tests -= 1
-                print(f'    Cannot read ../{estimator}/test_{id}_params.txt')
+                print(f'    Cannot read ../{estimator}/test_{test_id}_params.txt')
                 continue
             except FileNotFoundError:
                 n_successful_tests -= 1
-                print(f'    Cannot read ../{estimator}/test_{id}.yaml')
+                print(f'    Cannot read ../{estimator}/test_{test_id}.yaml')
                 continue
 
 
