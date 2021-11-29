@@ -77,16 +77,23 @@ if __name__ == '__main__':
                         data.append(point)
                 data = np.array(data)
                 # filter selecting less data
-                samples = np.linspace(0, data.shape[0] - 1, 500, dtype=int)
-                data = data[samples]
+                #samples = np.linspace(0, data.shape[0] - 1, 500, dtype=int)
+                #data = data[samples]
             except IOError:
                 print(f'    Data for test_{test_id} not found')
-                return True
-            
+                return False
+        
+        # perform estimation if there is ground truth
+        try: 
+            _read_yaml(f'{batch_save_path}/tests_params/test_{test_id}.yaml')
+        except FileNotFoundError:
+            print(f'    Cannot read ../tests_params/test_{test_id}.yaml')
+            return False
+
         try:
             _check_data_atleast_2D(data)
         except ValueError:
-            return True
+            return False
 
         for estimator_name, estimator in zip(estimators_names, estimators):
             # default estimation (e.g. Total Least Squares)
