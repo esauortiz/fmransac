@@ -7,7 +7,7 @@ from multiprocessing import Pool, Value
 import numpy as np
 import sys, os
 
-def main():
+if __name__ == '__main__':
 
     model_class = str(sys.argv[1])
     batch_id = str(sys.argv[2])
@@ -67,12 +67,20 @@ def main():
                 #continue
         else:
             try:
-                data = np.loadtxt(f'{batch_save_path}/datasets/test_{test_id}.txt', delimiter=" ")
-                data = data[~np.isnan(data)] # remove nans if needed
+                raw_data = np.loadtxt(f'{batch_save_path}/datasets/test_{test_id}.txt', delimiter=" ")
+                # if a point contains NaN values won't be included in data
+                data = []
+                for point in raw_data:
+                    if np.sum(np.isnan(point)) > 0:
+                        continue
+                    else:
+                        data.append(point)
+                data = np.array(data)
+
             except IOError:
                 print(f'    Data for test_{test_id} not found')
                 return True
-
+            
         try:
             _check_data_atleast_2D(data)
         except ValueError:
@@ -121,6 +129,3 @@ def main():
         p.map(_run_test, range(n_tests))
 
     print(' ')
-
-if __name__ == '__main__':
-    main()
