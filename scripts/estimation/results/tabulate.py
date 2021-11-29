@@ -55,7 +55,6 @@ def main():
         for estimator in estimators_names:
             #read results
             results = np.loadtxt(f'{batch_save_path}/results/{estimator}/00_{metric}.txt')
-            results = 90 - results
             metric_value = get_metric(results, stat_type)
             batch_row.append(metric_value)
 
