@@ -62,7 +62,7 @@ def _angle_between_vectors(original_normal_vector, estimated_normal_vector):
     angle : float
         Angle between vectors
     is_antiparallel:
-        True if both vectors have the same direction
+        False if both vectors have the same direction
     """
     onv = original_normal_vector / np.linalg.norm(original_normal_vector)
     env = estimated_normal_vector / np.linalg.norm(estimated_normal_vector)
