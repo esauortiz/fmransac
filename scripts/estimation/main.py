@@ -35,7 +35,7 @@ if __name__ == '__main__':
     theta = ransac_params['theta']
     n = ransac_params['n']
     sigma_phi = ransac_params['sigma_phi']
-    outlier_ratio = batch_params['ransac_params']['outlier_ratio']
+    outlier_ratio = ransac_params['outlier_ratio']
 
     estimators = []
     for estimator_name in estimators_names:
