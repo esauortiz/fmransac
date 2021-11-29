@@ -24,7 +24,6 @@ if __name__ == '__main__':
     model_class = eval(batch_params['model_params']['model_class'])
     estimators_names = batch_params['estimators_names']
     ransac_params = batch_params['ransac_params']
-    outlier_ratio = batch_params['dataset_params']['outlier_ratio']
 
     # configure estimators
     min_samples = ransac_params['min_samples']
@@ -36,6 +35,7 @@ if __name__ == '__main__':
     theta = ransac_params['theta']
     n = ransac_params['n']
     sigma_phi = ransac_params['sigma_phi']
+    outlier_ratio = batch_params['ransac_params']['outlier_ratio']
 
     estimators = []
     for estimator_name in estimators_names:
