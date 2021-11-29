@@ -261,7 +261,7 @@ class PlaneModelND(BaseModel):
         w, v = np.linalg.eig(Sw)
         normal_vector = v[:,np.argmin(w)]
 
-        self.params = (origin, normal_vector)
+        self.params = (origin, normal_vector/np.linalg.norm(normal_vector))
         # denormalizes origin and normal_vector
         
         #self.denorm_params(H)
