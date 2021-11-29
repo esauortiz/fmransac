@@ -77,8 +77,8 @@ if __name__ == '__main__':
                         data.append(point)
                 data = np.array(data)
                 # filter selecting less data
-                #samples = np.linspace(0, data.shape[0] - 1, 500, dtype=int)
-                #data = data[samples]
+                samples = np.linspace(0, data.shape[0] - 1, 300, dtype=int)
+                data = data[samples]
             except IOError:
                 print(f'    Data for test_{test_id} not found')
                 return False
