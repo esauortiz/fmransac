@@ -46,89 +46,99 @@ if __name__ == '__main__':
     for batch_id in range(n_batches):
         # read batch params
         batch_params = _read_yaml(f'{tests_path}/{model_class}/batch_{initial_batch_id + batch_id}/batch_params.yaml')
-        model_params = batch_params['model_params']
+        try:
+            real_dataset = batch_params['dataset_params']['real_dataset']
+        except:
+            # handling old versions of batch_params without generate_data key (synthetic dataset generation was assumed)
+            real_dataset = False
+            
+        # if synthetic data is generated generate a yaml file discribing each dataset
+        if real_dataset == False:
 
-        for test_id in range(n_tests):
-            # random seed
-            # seed_mod setted at 0 as default
-            random.seed(test_id)
-            np.random.seed(test_id)
+            # synthetic data model parameters
+            model_params = batch_params['model_params']
+        
+            for test_id in range(n_tests):
+                # random seed
+                # seed_mod setted at 0 as default
+                random.seed(test_id)
+                np.random.seed(test_id)
 
-            # Model
-            test_model_params = None
-            model_samples = None
+                # Model
+                test_model_params = None
+                model_samples = None
 
-            if model_class == 'LineModelND':
-                axis = model_params['axis']
-                axis_range = [- random.randint(*model_params['axis_range']), 
-                                random.randint(*model_params['axis_range'])]
+                if model_class == 'LineModelND':
+                    axis = model_params['axis']
+                    axis_range = [- random.randint(*model_params['axis_range']), 
+                                    random.randint(*model_params['axis_range'])]
 
-                quadrant = model_params['quadrant']
-                if quadrant == 0:
-                    quadrant = None
-                origin, direction = _get_origin_direction(  model_params['origin'], 
-                                                            model_params['direction'], 
-                                                            model_params['dim'],
-                                                            quadrant)
-                # the range will be applied to the direction component with most weight
-                max_index_col = np.argmax(abs(np.array([*direction])), axis=0)
-                model_samples = [axis_range, int(max_index_col)]
-                test_model_params = [origin, direction]
+                    quadrant = model_params['quadrant']
+                    if quadrant == 0:
+                        quadrant = None
+                    origin, direction = _get_origin_direction(  model_params['origin'], 
+                                                                model_params['direction'], 
+                                                                model_params['dim'],
+                                                                quadrant)
+                    # the range will be applied to the direction component with most weight
+                    max_index_col = np.argmax(abs(np.array([*direction])), axis=0)
+                    model_samples = [axis_range, int(max_index_col)]
+                    test_model_params = [origin, direction]
 
-            elif model_class == 'CircleModel':
+                elif model_class == 'CircleModel':
 
-                xc = random.randint(*model_params['xc'])
-                yc = random.randint(*model_params['yc'])
-                radius = random.randint(*model_params['radius'])
+                    xc = random.randint(*model_params['xc'])
+                    yc = random.randint(*model_params['yc'])
+                    radius = random.randint(*model_params['radius'])
 
-                model_samples = model_params['samples']
-                test_model_params = [xc, yc, radius]
+                    model_samples = model_params['samples']
+                    test_model_params = [xc, yc, radius]
 
-            elif model_class == 'EllipseModel':
+                elif model_class == 'EllipseModel':
 
-                xc = random.randint(*model_params['xc'])
-                yc = random.randint(*model_params['yc'])
-                height = random.randint(*model_params['a'])
-                width = random.randint(*model_params['b'])
-                theta = random.randint(*model_params['theta'])
-                theta = float(theta / 10**(3))
-                
-                model_samples = model_params['samples']
-                test_model_params = [xc, yc, height, width, theta]
+                    xc = random.randint(*model_params['xc'])
+                    yc = random.randint(*model_params['yc'])
+                    height = random.randint(*model_params['a'])
+                    width = random.randint(*model_params['b'])
+                    theta = random.randint(*model_params['theta'])
+                    theta = float(theta / 10**(3))
+                    
+                    model_samples = model_params['samples']
+                    test_model_params = [xc, yc, height, width, theta]
 
-            elif model_class == 'PlaneModelND':
-                origin, direction = _get_origin_direction(model_params['origin_range'], model_params['normal_vector_range'], (model_params['dim']))
-                model_samples = model_params['samples']
+                elif model_class == 'PlaneModelND':
+                    origin, direction = _get_origin_direction(model_params['origin_range'], model_params['normal_vector_range'], (model_params['dim']))
+                    model_samples = model_params['samples']
 
-                test_model_params = [origin, direction]
+                    test_model_params = [origin, direction]
 
-            elif model_class == 'HomographyModel':
-                
-                # 3D plane params
-                origin, direction = _get_origin_direction(model_params['orgn_range'], model_params['nrm_vctr_range'], 3)
-                # ranges and samples of 3D plane
-                model_samples = [model_params['ranges'], model_params['samples']]
-                # Camera extrinsincs params
-                theta = model_params['theta']
-                tx = model_params['tx']
-                ty = model_params['ty']
-                tz = model_params['tz']
+                elif model_class == 'HomographyModel':
+                    
+                    # 3D plane params
+                    origin, direction = _get_origin_direction(model_params['orgn_range'], model_params['nrm_vctr_range'], 3)
+                    # ranges and samples of 3D plane
+                    model_samples = [model_params['ranges'], model_params['samples']]
+                    # Camera extrinsincs params
+                    theta = model_params['theta']
+                    tx = model_params['tx']
+                    ty = model_params['ty']
+                    tz = model_params['tz']
 
-                test_model_params = [theta, tx, ty, tz, origin, direction]
+                    test_model_params = [theta, tx, ty, tz, origin, direction]
 
-            # Define data
-            payload = {
-                'test_id': test_id,
-                'model_params' : {
-                    'model': model_class,
-                    'model_samples' : model_samples,
-                    'params': test_model_params,
-                },
-                #'dataset_params' : batch_group_params['dataset_params'],
-                #'ransac_params' : batch_group_params['ransac_params']
-            }
+                # Define data
+                payload = {
+                    'test_id': test_id,
+                    'model_params' : {
+                        'model': model_class,
+                        'model_samples' : model_samples,
+                        'params': test_model_params,
+                    },
+                    #'dataset_params' : batch_group_params['dataset_params'],
+                    #'ransac_params' : batch_group_params['ransac_params']
+                }
 
-            # Write YAML file
-            file = f'{tests_path}/{model_class}/batch_{initial_batch_id + batch_id}/tests_params/test_{test_id}.yaml'
-            with io.open(file, 'w', encoding='utf8') as outfile:
-                yaml.dump(payload, outfile, default_flow_style=False, allow_unicode=True)
+                # Write YAML file
+                file = f'{tests_path}/{model_class}/batch_{initial_batch_id + batch_id}/tests_params/test_{test_id}.yaml'
+                with io.open(file, 'w', encoding='utf8') as outfile:
+                    yaml.dump(payload, outfile, default_flow_style=False, allow_unicode=True)
