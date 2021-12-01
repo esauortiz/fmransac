@@ -24,6 +24,12 @@ if __name__ == '__main__':
     model_class = eval(batch_params['model_params']['model_class'])
     estimators_names = batch_params['estimators_names']
     ransac_params = batch_params['ransac_params']
+    
+    try:
+        real_dataset = batch_params['dataset_params']['real_dataset']
+    except:
+        # if there is not real_dataset key assume that data is synthetic
+        real_dataset = False
 
     # configure estimators
     min_samples = ransac_params['min_samples']
@@ -56,44 +62,55 @@ if __name__ == '__main__':
     def _run_test(test_id):
         global finished_tests
 
-        # Read noisy data
-        if model_class.__name__ == 'HomographyModel':
-            try:
-                data1 = np.loadtxt(f'{batch_save_path}/datasets/test_{test_id}_proj1.txt')
-                data2 = np.loadtxt(f'{batch_save_path}/datasets/test_{test_id}_proj2.txt')
-                data = np.column_stack((data1,data2))
-            except IOError:
-                print(f'    Data for test_{test_id} not found')
-                #continue
+        if real_dataset:
+            # Read real dataset # TODO: rest of models
+            if model_class.__name__ == 'HomographyModel':
+                try:
+                    data1 = np.loadtxt(f'{batch_save_path}/datasets/src.txt')
+                    data2 = np.loadtxt(f'{batch_save_path}/datasets/dst.txt')
+                    data = np.column_stack((data1,data2))
+                except IOError:
+                    print(f'    Data for test_{test_id} not found')
+                    return False
         else:
-            try:
-                raw_data = np.loadtxt(f'{batch_save_path}/datasets/test_{test_id}.txt', delimiter=" ")
-                # if a point contains NaN values won't be included in data
-                data = []
-                for point in raw_data:
-                    if np.sum(np.isnan(point)) > 0:
-                        continue
-                    else:
-                        data.append(point)
-                data = np.array(data)
-                # filter selecting less data
-                samples = np.linspace(0, data.shape[0] - 1, 300, dtype=int)
-                data = data[samples]
-            except IOError:
-                print(f'    Data for test_{test_id} not found')
+            # Read noisy synthetic data
+            if model_class.__name__ == 'HomographyModel':
+                try:
+                    data1 = np.loadtxt(f'{batch_save_path}/datasets/test_{test_id}_proj1.txt')
+                    data2 = np.loadtxt(f'{batch_save_path}/datasets/test_{test_id}_proj2.txt')
+                    data = np.column_stack((data1,data2))
+                except IOError:
+                    print(f'    Data for test_{test_id} not found')
+                    return False
+            else:
+                try:
+                    raw_data = np.loadtxt(f'{batch_save_path}/datasets/test_{test_id}.txt', delimiter=" ")
+                    # if a point contains NaN values won't be included in data
+                    data = []
+                    for point in raw_data:
+                        if np.sum(np.isnan(point)) > 0:
+                            continue
+                        else:
+                            data.append(point)
+                    data = np.array(data)
+                    # filter selecting less data
+                    samples = np.linspace(0, data.shape[0] - 1, 300, dtype=int)
+                    data = data[samples]
+                except IOError:
+                    print(f'    Data for test_{test_id} not found')
+                    return False
+            
+            # perform estimation if there is ground truth
+            try: 
+                _read_yaml(f'{batch_save_path}/tests_params/test_{test_id}.yaml')
+            except FileNotFoundError:
+                print(f'    Cannot read ../tests_params/test_{test_id}.yaml')
                 return False
-        
-        # perform estimation if there is ground truth
-        try: 
-            _read_yaml(f'{batch_save_path}/tests_params/test_{test_id}.yaml')
-        except FileNotFoundError:
-            print(f'    Cannot read ../tests_params/test_{test_id}.yaml')
-            return False
 
-        try:
-            _check_data_atleast_2D(data)
-        except ValueError:
-            return False
+            try:
+                _check_data_atleast_2D(data)
+            except ValueError:
+                return False
 
         for estimator_name, estimator in zip(estimators_names, estimators):
             # default estimation (e.g. Total Least Squares)
