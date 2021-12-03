@@ -66,8 +66,8 @@ if __name__ == '__main__':
             # Read real dataset # TODO: rest of models
             if model_class.__name__ == 'HomographyModel':
                 try:
-                    data1 = np.loadtxt(f'{batch_save_path}/datasets/src.txt')
-                    data2 = np.loadtxt(f'{batch_save_path}/datasets/dst.txt')
+                    data1 = np.loadtxt(f'{batch_save_path}/datasets/src_pts.txt')
+                    data2 = np.loadtxt(f'{batch_save_path}/datasets/dst_pts.txt')
                     data = np.column_stack((data1,data2))
                 except IOError:
                     print(f'    Data for test_{test_id} not found')
