@@ -123,6 +123,7 @@ if __name__ == '__main__':
 				'label': dataset_params['dataset_label'][i],
 				'real_dataset' : dataset_params['real_dataset']
 				}
+			batch_params['model_params'] = {'model_class': model_class}
 
 		# Write YAML file
 		with io.open(f'{tests_path}/{model_class}/{batch_id}/batch_params.yaml', 'w', encoding='utf8') as outfile:
