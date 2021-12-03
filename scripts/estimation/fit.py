@@ -1,11 +1,14 @@
-import math
-import numpy as np
-
 from numpy.linalg import inv, pinv
 from scipy import optimize
 from mpmath import acot
 from estimation.utils import _check_data_dim, _check_data_atleast_2D, _norm_along_axis, _musigma_norm, _maxmin_norm
 from dataset_generation.utils import _is_in_bbox
+
+import math
+import torch
+import kornia
+import numpy as np
+
 
 class BaseModel(object):
 
@@ -808,7 +811,7 @@ class EllipseModel(BaseModel):
         self.params = self.get_implicit_params([a,b,c,d,f,g])
         return True
 
-class HomographyModel(BaseModel):
+class SimilarityHomographyModel(BaseModel):
 
     """Least squares estimator for similarity Homography.
     Similarity Homography is defined by the following matrix:
@@ -1189,3 +1192,104 @@ class HomographyModel(BaseModel):
         phi = np.arctan(s_sin_phi/s_cos_phi)
         params = np.array([s, phi, tx, ty])
         return params
+
+class HomographyModel(BaseModel):
+
+    """ Homography estimator class based on 
+        Kornia DLT implementation
+    
+    Attributes
+    ----------
+    params : (3,3) array
+        Homography matrix
+    """
+
+    def __init__(self):
+        BaseModel.__init__(self)
+
+    def estimate(self, data, w = None):
+        """ Fit homography to selected correspondences
+        Parameters
+        ----------
+        data : (2, N, 2) array
+            2 sets of N points in a space of dimensionality dim = 2.
+        Returns
+        -------
+        success : bool
+            True, if model estimation succeeds.
+        """
+        # target points
+        src_pts = data[:,2:]
+        # from points
+        dst_pts = data[:,:2]
+
+        if src_pts.shape != dst_pts.shape:
+            raise RuntimeError('number of points or cardinality do not match')
+        if src_pts.shape[0] + dst_pts.shape[0] < 4:
+            raise ValueError(f'At least 4 corresponding points are needed - src_pts.shape: {src_pts.shape} - dst_pts.shape: {dst_pts.shape}')
+            
+        # estimation based on Kornia implementation
+        src_pts = torch.from_numpy(src_pts.reshape(1,*src_pts.shape))
+        dst_pts = torch.from_numpy(dst_pts.reshape(1,*dst_pts.shape))
+
+        if w is not None:
+            w = torch.from_numpy(w.reshape(1,*w.shape))
+
+        H_est =  kornia.geometry.homography.find_homography_dlt(src_pts, dst_pts, w) # shape (1, 3, 3)
+        H_est = H_est.cpu().detach().numpy()
+        self.params = H_est[0]
+
+        return True
+
+    def residuals(self, data, params = None):
+        """ Apply homography to all correspondences, 
+            return error for each transformed point. """
+
+        def add_ones_column(data):
+            """Adds ones column in data
+            data.shape is suposed to be (n_points, dim)
+            """
+            n_points, dim = data.shape
+            ones = np.ones((n_points, dim+1))
+            ones[:,:-1] = data
+            return ones.T
+
+        def normalize(points):
+            """ Normalize a collection of points in 
+                homogeneous coordinates so that last row = 1. """
+
+            for row in points:
+                row /= points[-1]
+            return points
+
+        # from points
+        src_pts = add_ones_column(data[:,2:])
+        # target points
+        dst_pts = add_ones_column(data[:,:2])
+
+        if src_pts.shape != dst_pts.shape:
+            raise RuntimeError('number of points or cardinality do not match')
+
+        if params is not None: H = params
+        else: H = self.params        
+
+        # transform fp
+        src_transformed = np.dot(H, src_pts)
+        # normalize hom. coordinates
+        src_transformed = normalize(src_transformed)
+       
+        # compute the reprojection error
+        residuals = np.sqrt(np.sum((dst_pts-src_transformed)**2,axis=0))
+        return residuals
+
+    def get_projection(self, data):
+        """ returns projection x' = Hx
+        """
+        N, dim = data.shape
+        ones = np.ones((N, dim+1))
+        ones[:,:-1] = data
+        data = np.dot(self.H, ones.T)
+        for row in data:
+            row /= data[-1]
+            print(np.sum(row))
+        return data[:,:-1].T
