@@ -22,7 +22,12 @@ if __name__ == '__main__':
     model = eval(batch_params['model_params']['model_class'])()
     estimators_names = batch_params['estimators_names']
     n_estimators = len(estimators_names)
-    
+    try:
+        real_dataset = batch_params['dataset_params']['real_dataset']
+    except:
+        # if there is not real_dataset key assume that data is synthetic
+        real_dataset = False
+
     # counter of estimators whose tests results have been generated
     finished_estimators = 1
 
@@ -43,18 +48,31 @@ if __name__ == '__main__':
 
             try:
                 # model original and estimated params
-                test_params = _read_yaml(f'{batch_save_path}/tests_params/test_{test_id}.yaml')
-                params_original = test_params['model_params']['params']
+                # if real dataset read unique original model parameters
+                if real_dataset:
+                    params_original = np.loadtxt(f'{batch_save_path}/tests_params/original_params.txt')
+                else:
+                    test_params = _read_yaml(f'{batch_save_path}/tests_params/test_{test_id}.yaml')
+                    params_original = test_params['model_params']['params']
                 params_estimated = np.loadtxt(f'{batch_save_path}/results/{estimator}/test_{test_id}_params.txt')
+
+                # additional information from estimation process
                 if estimator != 'default':
                     iterations = np.loadtxt(f'{batch_save_path}/results/{estimator}/test_{test_id}_iterations.txt')
 
                 if model.__class__ == HomographyModel:
-                    # read dataset and original inliers to compute RMSE
-                    data1 = np.loadtxt(f'{batch_save_path}/datasets/test_{test_id}_proj1.txt')
-                    data2 = np.loadtxt(f'{batch_save_path}/datasets/test_{test_id}_proj2.txt')
-                    data = np.column_stack((data1,data2))
-                    original_inliers = np.loadtxt(f'{batch_save_path}/datasets/test_{test_id}_inliers.txt').astype(bool)
+                    if real_dataset:
+                        # ground truth key points are used to compute RMSE
+                        data1 = np.loadtxt(f'{batch_save_path}/tests_params/kp1.txt')
+                        data2 = np.loadtxt(f'{batch_save_path}/tests_params/kp2.txt')
+                        data = np.column_stack((data1[:,:2],data2[:,:2]))
+                        original_inliers = np.ones(data1.shape[0], dtype=bool)
+                    else:
+                        # read dataset and original inliers to compute RMSE
+                        data1 = np.loadtxt(f'{batch_save_path}/datasets/test_{test_id}_proj1.txt')
+                        data2 = np.loadtxt(f'{batch_save_path}/datasets/test_{test_id}_proj2.txt')
+                        data = np.column_stack((data1,data2))
+                        original_inliers = np.loadtxt(f'{batch_save_path}/datasets/test_{test_id}_inliers.txt').astype(bool)
 
             except IOError:
                 n_successful_tests -= 1
@@ -91,7 +109,8 @@ if __name__ == '__main__':
             estimation_errors = np.append(estimation_errors, estimation_error)
 
             # abs and rel errors
-            abs_error, rel_error = _get_estimation_error(params_original, params_estimated)
+            #abs_error, rel_error = _get_estimation_error(params_original, params_estimated)
+            abs_error, rel_error = [0, 0]
             abs_errors = np.append(abs_errors, abs_error)
             rel_errors = np.append(rel_errors, rel_error)
             # some additional info
