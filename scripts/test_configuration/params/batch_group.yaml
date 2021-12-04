@@ -2,11 +2,12 @@ group_params:
   group_id : 'G1'
   initial_batch_id : 1
   n_batches : 16 # number of tests batches each with n_tests
-  n_tests : 1  # number of different datasets (each with different model parameters)
+  n_tests : 100  # number of different datasets (each with different model parameters)
   model_class : HomographyModel
   estimators_names : [ # estimators list to estimate each dataset
                 RANSAC,
                 MSAC,
+                FMR4_M1,
                 FMR4_M2
                 ]
 
@@ -19,14 +20,14 @@ dataset_params:
   n_points : 300      # dataset total samples 
   max_trials : 10000  # max. trials to generate inliers or outliers
   noise_dim : [0,1]   # gaussian noise and uniform noise will affect these dimensions
-  outlier_ratio : 0.99999 # list length must match n_batches or be a single value
+  outlier_ratio : 0.75 # list length must match n_batches or be a single value
   residual_kappa : 2  # multiplier to set residual_threshold = kappa * sd 
   sd : 1.0           # magnitude of the gaussian noise
 
 ransac_params:
-  min_samples :        # set of samples chosen in each main loop iteration
+  min_samples : 4       # set of samples chosen in each main loop iteration
   stop_prob : 0.99      # probability to compute number of iterations in the main loop of RANSAC
-  max_trials : 100    # max. number of iterations in the main loop of RANSAC
+  max_trials : 1000    # max. number of iterations in the main loop of RANSAC
   t_max : 25            # max. number of iterations in the model refinement stage (iterative reestimation)
   residual_threshold : 5 # threshold to classify dataset in inliers/outliers
   residual_kappa : 0    # if kappa = 0 threshold values are chosen, else threshold = kappa * sd

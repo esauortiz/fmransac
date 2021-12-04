@@ -1293,3 +1293,7 @@ class HomographyModel(BaseModel):
             row /= data[-1]
             print(np.sum(row))
         return data[:,:-1].T
+
+    def get_general_params(self, params = None):
+        if params is not None: self.params = params
+        return self.params

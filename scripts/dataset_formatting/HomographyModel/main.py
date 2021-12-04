@@ -48,7 +48,7 @@ if __name__ == '__main__':
     figures_dict = {**png_figures, **jpg_figures}
 
     # format data for each image pair
-    for figure_label, idx in zip(figures_dict, range(1)):
+    for figure_label, idx in zip(figures_dict, range(n_batches)):
         figure_ext = figures_dict[figure_label]
         # load image pair
         fname1 = f'{DATASET_PATH}/{figure_label}A.{figure_ext}'
