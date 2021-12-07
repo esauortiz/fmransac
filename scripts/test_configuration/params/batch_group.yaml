@@ -20,7 +20,7 @@ dataset_params:
   n_points : 300      # dataset total samples 
   max_trials : 10000  # max. trials to generate inliers or outliers
   noise_dim : [0,1]   # gaussian noise and uniform noise will affect these dimensions
-  outlier_ratio : 0.75 # list length must match n_batches or be a single value
+  outlier_ratio : 0.90 # list length must match n_batches or be a single value
   residual_kappa : 2  # multiplier to set residual_threshold = kappa * sd 
   sd : 1.0           # magnitude of the gaussian noise
 
