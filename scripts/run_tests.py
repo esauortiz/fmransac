@@ -1,7 +1,7 @@
 from test_configuration.utils import _read_yaml
 import sys, os
 
-def main(model_class, group_id):
+def main(model_class, group_id, batch_id = None):
 
     current_path = os.path.dirname(os.path.realpath(__file__))
     tests_path = _read_yaml(f'{current_path}/test_configuration/params/tests_path.yaml')['path']
@@ -27,13 +27,22 @@ def main(model_class, group_id):
         print('[*] Generating datasets ...')
         for batch_id in range(n_batches): os.system(f'python  {current_path}/dataset_generation/main.py {model_class} batch_{initial_batch_id + batch_id}')
 
-    # estimation
-    print('[*] Estimating parameters ...')
-    for batch_id in range(n_batches): os.system(f'python  {current_path}/estimation/main.py {model_class} batch_{initial_batch_id + batch_id}')
+    if batch_id is not None:
+        # estimation
+        print(f'[*] Estimating parameters for {batch_id}...')
+        for batch_id in range(n_batches): os.system(f'python  {current_path}/estimation/main.py {model_class} {batch_id}')
 
-    # results
-    print(f'[*] Generating results ...')
-    for batch_id in range(n_batches): os.system(f'python  {current_path}/estimation/results/main.py {model_class} batch_{initial_batch_id + batch_id}')
+        # results
+        print(f'[*] Generating results for {batch_id}...')
+        for batch_id in range(n_batches): os.system(f'python  {current_path}/estimation/results/main.py {model_class} {batch_id}')
+    else:
+        # estimation
+        print('[*] Estimating parameters ...')
+        for batch_id in range(n_batches): os.system(f'python  {current_path}/estimation/main.py {model_class} batch_{initial_batch_id + batch_id}')
+
+        # results
+        print(f'[*] Generating results ...')
+        for batch_id in range(n_batches): os.system(f'python  {current_path}/estimation/results/main.py {model_class} batch_{initial_batch_id + batch_id}')
 
     return False
     
@@ -42,5 +51,9 @@ if __name__ == '__main__':
 
     model_class = sys.argv[1]
     group_id = sys.argv[2]
+    try: 
+        batch_id = sys.argv[3]
+    except:
+        batch_id = None
 
-    main(model_class, group_id)
+    main(model_class, group_id, batch_id)
