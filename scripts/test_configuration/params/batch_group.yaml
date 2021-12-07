@@ -1,7 +1,7 @@
 group_params:
   group_id : 'G2'
   description: 'En G2 se elimina la limitacion de features encontrados con SIFT y se filtran los matches buenos con FLANN (matching) y ratio tests (filtro)'
-  initial_batch_id : 16
+  initial_batch_id : 17
   n_batches : 16 # number of tests batches each with n_tests
   n_tests : 100  # number of different datasets (each with different model parameters)
   model_class : HomographyModel
