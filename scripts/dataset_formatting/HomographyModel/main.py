@@ -56,8 +56,8 @@ if __name__ == '__main__':
         img1 = cv.imread(fname1,0) # trainImage
         img2 = cv.imread(fname2,0) # queryImage
         # Initiate SIFT detector
-        sift = cv.SIFT_create(500)
-        #surf = cv.xfeatures2d.SURF_create()
+        sift = cv.SIFT_create()
+        #surf = cv.SURF_create()
         #brief = cv.xfeatures2d.BriefDescriptorExtractor_create()
 
         # from keypoints to descriptors, but descriptors are conditioned to manually set kp.size
@@ -66,13 +66,33 @@ if __name__ == '__main__':
 
         # keypoints and its descriptors from ground truth
         kp1_ori, kp2_ori, M_ori = read_validation(DATASET_PATH, figure_label, as_keypoints = False)
-        #M_ori = np.linalg.inv(M_ori)
-        #M_ori /= M_ori[2,2]
 
-        # matching
-        bf = cv.BFMatcher_create()
-        matches = bf.match(des1, des2)
+        # matching w/ brute force
+        #bf = cv.BFMatcher_create()
+        #matches = bf.match(des1, des2)
+
+        # matching with FLANN
+        # FLANN parameters
+        FLANN_INDEX_KDTREE = 0
+        index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
+        search_params = dict(checks=50)
+
+        flann = cv.FlannBasedMatcher(index_params,search_params)
+        matches = flann.knnMatch(des1,des2,k=2)
+
+        good = []
+        pts1 = []
+        pts2 = []
+
+        # ratio test as per Lowe's paper
+        for i,(m,n) in enumerate(matches):
+            if m.distance < 0.8*n.distance:
+                good.append(m)
+                pts2.append(kp2[m.trainIdx].pt)
+                pts1.append(kp1[m.queryIdx].pt)
         
+        matches = good
+
         if len(matches)>MIN_MATCH_COUNT:
             src_pts = np.float32([ kp1[m.queryIdx].pt for m in matches ])
             dst_pts = np.float32([ kp2[m.trainIdx].pt for m in matches ])
@@ -103,4 +123,4 @@ if __name__ == '__main__':
         print(M_ori)
         """
 
-        print(f'Data from `{figure_label}` image pairs has been formated')
+        print(f'Data from `{figure_label}` image pair has been formated')
