@@ -56,7 +56,7 @@ if __name__ == '__main__':
         img1 = cv.imread(fname1,0) # trainImage
         img2 = cv.imread(fname2,0) # queryImage
         # Initiate SIFT detector
-        sift = cv.SIFT_create()
+        sift = cv.SIFT_create(500)
         #surf = cv.xfeatures2d.SURF_create()
         #brief = cv.xfeatures2d.BriefDescriptorExtractor_create()
 
@@ -79,7 +79,7 @@ if __name__ == '__main__':
         else:
             print( "Not enough matches are found - {}/{}".format(len(matches), MIN_MATCH_COUNT) )
         
-        np.savetxt(f'{BATCH_PATH}/batch_{initial_batch_id + idx}/tests_params/M.txt', M_ori)
+        np.savetxt(f'{BATCH_PATH}/batch_{initial_batch_id + idx}/tests_params/original_params.txt', M_ori)
         np.savetxt(f'{BATCH_PATH}/batch_{initial_batch_id + idx}/tests_params/kp1.txt', kp1_ori)
         np.savetxt(f'{BATCH_PATH}/batch_{initial_batch_id + idx}/tests_params/kp2.txt', kp2_ori)
         np.savetxt(f'{BATCH_PATH}/batch_{initial_batch_id + idx}/datasets/src_pts.txt', src_pts)
