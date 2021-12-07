@@ -5,8 +5,8 @@ def main(model_class, group_id, batch_id_as_string = None):
 
     current_path = os.path.dirname(os.path.realpath(__file__))
     tests_path = _read_yaml(f'{current_path}/test_configuration/params/tests_path.yaml')['path']
-    if input('Do you want to set batch group configuration with current `scripts/test_configuration/params/batch_group.yaml` content? (y/n)\n') == 'y':
-        os.system(f'python  {current_path}/test_configuration/configure_batch_group.py {model_class} {group_id}')
+    #if input('Do you want to set batch group configuration with current `scripts/test_configuration/params/batch_group.yaml` content? (y/n)\n') == 'y':
+    #    os.system(f'python  {current_path}/test_configuration/configure_batch_group.py {model_class} {group_id}')
 
     # read saved group params (batch_group_params could be modified but tests_path is expected not to change)
     batch_group_params = _read_yaml(f'{tests_path}/{model_class}/00_batch_groups/{group_id}/batch_group_params.yaml')
@@ -14,7 +14,7 @@ def main(model_class, group_id, batch_id_as_string = None):
     n_batches = batch_group_params['group_params']['n_batches']
 
     # tests configuration
-    os.system(f'python  {current_path}/test_configuration/create_directories.py {model_class} {group_id}')
+    #os.system(f'python  {current_path}/test_configuration/create_directories.py {model_class} {group_id}')
     os.system(f'python  {current_path}/test_configuration/set_batches_params.py {model_class} {group_id}')
     os.system(f'python  {current_path}/test_configuration/set_tests_params.py {model_class} {group_id}') 
 
