@@ -68,7 +68,7 @@ def main():
         whole_data = np.column_stack((whole_data1,whole_data2))
         residuals = get_residuals(whole_data, HomographyModel, params_original)
         whole_original_inliers = residuals < residual_threshold
-        n_true_inliers = np.append(n_true_inliers, np.sum(whole_original_inliers))
+        n_true_inliers = np.sum(whole_original_inliers)
         batch_row.append(n_true_inliers)
 
         data[-(batch_id + 1)] = batch_row # -(batch_id + 1) because reversed
