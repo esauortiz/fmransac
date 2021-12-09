@@ -15,6 +15,8 @@
 
 from test_configuration.utils import _read_yaml
 from estimation.results.utils import get_metric
+from estimation.utils import get_residuals
+from estimation.fit import HomographyModel
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -37,9 +39,10 @@ def main():
     n_batches = batch_group_params['group_params']['n_batches']
     estimators_names = batch_group_params['group_params']['estimators_names']
     n_estimators = len(estimators_names)
+    residual_threshold = batch_group_params['ransac_params']['residual_threshold']
 
     # build results as data frame
-    data = np.empty((n_batches, n_estimators))
+    data = np.empty((n_batches, n_estimators + 1))
     row_labels = []
 
     for batch_id in reversed(range(n_batches)):
@@ -57,10 +60,20 @@ def main():
             results = np.loadtxt(f'{batch_save_path}/results/{estimator}/00_{metric}.txt')
             metric_value = get_metric(results, stat_type)
             batch_row.append(metric_value)
+        
+        # number of inliers in data generated with images + features detector + features matching
+        params_original = np.loadtxt(f'{batch_save_path}/tests_params/original_params.txt')
+        whole_data2 = np.loadtxt(f'{batch_save_path}/datasets/dst_pts.txt')
+        whole_data1 = np.loadtxt(f'{batch_save_path}/datasets/src_pts.txt')
+        whole_data = np.column_stack((whole_data1,whole_data2))
+        residuals = get_residuals(whole_data, HomographyModel, params_original)
+        whole_original_inliers = residuals < residual_threshold
+        n_true_inliers = np.append(n_true_inliers, np.sum(whole_original_inliers))
+        batch_row.append(n_true_inliers)
 
         data[-(batch_id + 1)] = batch_row # -(batch_id + 1) because reversed
 
-    results_df = pd.DataFrame(data, index=row_labels, columns=estimators_names)
+    results_df = pd.DataFrame(data, index=row_labels, columns=[*estimators_names, 'n_true_inliers'])
     
     # save table
     print(results_df)
