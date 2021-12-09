@@ -77,7 +77,7 @@ if __name__ == '__main__':
                         whole_data = np.column_stack((whole_data1,whole_data2))
                         residuals = get_residuals(whole_data, HomographyModel, params_original)
                         whole_original_inliers = residuals < residual_threshold
-                        n_true_inliers = n_true_inliers.append(np.sum(whole_original_inliers))
+                        n_true_inliers = np.append(n_true_inliers, np.sum(whole_original_inliers))
                     else:
                         # read dataset and original inliers to compute RMSE
                         data1 = np.loadtxt(f'{batch_save_path}/datasets/test_{test_id}_proj1.txt')
