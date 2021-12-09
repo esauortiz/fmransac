@@ -1,4 +1,3 @@
-from estimation.utils import get_residuals
 from estimation.fit import EllipseModel, PlaneModelND, HomographyModel
 from estimation.results.utils import _get_estimation_error, _angle_between_vectors, _compute_RMSE
 from test_configuration.utils import _read_yaml
@@ -16,9 +15,8 @@ if __name__ == '__main__':
     scripts_path = current_path[:-19]
     tests_path = _read_yaml(f'{scripts_path}/test_configuration/params/tests_path.yaml')['path']
     batch_save_path = f'{tests_path}/{model_class}/{batch_id}'
-    batch_params = _read_yaml(f'{batch_save_path}/batch_params.yaml')
-    residual_threshold = batch_params['ransac_params']['residual_threshold']
-
+    batch_params = _read_yaml(f'{batch_save_path}/batch_params.yaml')    
+    
     estimators_names = batch_params['estimators_names']
     n_tests = batch_params['n_tests']
     model = eval(batch_params['model_params']['model_class'])()
@@ -45,8 +43,7 @@ if __name__ == '__main__':
         abs_errors = []     # absolute and relative errors for each component of the parameters vector
         rel_errors = []	
         iterations_list = []     # iterations of the iterative reestimation stage
-        n_true_inliers = []
-
+            
         for test_id in range(n_tests):
 
             try:
@@ -70,14 +67,6 @@ if __name__ == '__main__':
                         data2 = np.loadtxt(f'{batch_save_path}/tests_params/kp2.txt')
                         data = np.column_stack((data1[:,:2],data2[:,:2]))
                         original_inliers = np.ones(data1.shape[0], dtype=bool)
-
-                        # number of inliers in data generated with images + features detector + features matching
-                        whole_data1 = np.loadtxt(f'{batch_save_path}/datasets/dst_pts.txt')
-                        whole_data2 = np.loadtxt(f'{batch_save_path}/datasets/src_pts.txt')
-                        whole_data = np.column_stack((whole_data1,whole_data2))
-                        residuals = get_residuals(whole_data, HomographyModel, params_original)
-                        whole_original_inliers = residuals < residual_threshold
-                        n_true_inliers = np.append(n_true_inliers, np.sum(whole_original_inliers))
                     else:
                         # read dataset and original inliers to compute RMSE
                         data1 = np.loadtxt(f'{batch_save_path}/datasets/test_{test_id}_proj1.txt')
@@ -142,7 +131,6 @@ if __name__ == '__main__':
         np.savetxt(f'{batch_save_path}/results/{estimator}/00_estimation_errors.txt', estimation_errors)
         np.savetxt(f'{batch_save_path}/results/{estimator}/00_abs_errors.txt', abs_errors)
         np.savetxt(f'{batch_save_path}/results/{estimator}/00_rel_errors.txt', rel_errors)
-        np.savetxt(f'{batch_save_path}/results/{estimator}/00_n_true_inliers.txt', n_true_inliers)
         if estimator != 'default': np.savetxt(f'{batch_save_path}/results/{estimator}/00_iterations.txt', iterations_list)
 
         finished_estimators += 1
