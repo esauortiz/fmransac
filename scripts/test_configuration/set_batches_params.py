@@ -97,7 +97,7 @@ if __name__ == '__main__':
 		whole_data1 = np.loadtxt(f'{batch_save_path}/datasets/src_pts.txt')
 		whole_data = np.column_stack((whole_data1,whole_data2))
 		residuals = get_residuals(whole_data, HomographyModel, params_original)
-		whole_original_inliers = residuals < batch_group_params['ransac_params']['residual_threshold']
+		whole_original_inliers = residuals < batch_group_params['ransac_params']['residual_threshold'][i]
 		n_true_inliers = np.sum(whole_original_inliers)
 		dataset_params['outlier_ratio'][i] = 1.0 - (n_true_inliers / whole_data.shape[0])
 
