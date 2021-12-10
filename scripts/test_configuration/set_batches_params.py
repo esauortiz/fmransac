@@ -99,7 +99,7 @@ if __name__ == '__main__':
 		residuals = get_residuals(whole_data, HomographyModel, params_original)
 		whole_original_inliers = residuals < batch_group_params['ransac_params']['residual_threshold'][i]
 		n_true_inliers = np.sum(whole_original_inliers)
-		dataset_params['outlier_ratio'][i] = 1.0 - (n_true_inliers / whole_data.shape[0])
+		dataset_params['outlier_ratio'][i] = float(1.0 - (n_true_inliers / whole_data.shape[0]))
 
 		batch_id = f'batch_{initial_batch_id + i}'
 		batch_params = {
