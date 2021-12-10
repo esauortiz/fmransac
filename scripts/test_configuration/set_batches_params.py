@@ -1,6 +1,9 @@
 from scipy.stats.distributions import chi2
+from estimation.utils import get_residuals
+from estimation.fit import HomographyModel
 from test_configuration.utils import _read_yaml
 import io, os, sys, yaml
+import numpy as np
 
 if __name__ == '__main__':
 
@@ -85,6 +88,19 @@ if __name__ == '__main__':
 		ransac_params['theta'] = ransac_params['residual_threshold']
 
 	for i in range(n_batches):
+
+		# number of inliers in data generated with images + features detector + features matching
+		# setting true outlier ratio based on ransac threshold
+		batch_save_path = f'{tests_path}/{model_class}/batch_{initial_batch_id + i}'
+		params_original = np.loadtxt(f'{batch_save_path}/tests_params/original_params.txt')
+		whole_data2 = np.loadtxt(f'{batch_save_path}/datasets/dst_pts.txt')
+		whole_data1 = np.loadtxt(f'{batch_save_path}/datasets/src_pts.txt')
+		whole_data = np.column_stack((whole_data1,whole_data2))
+		residuals = get_residuals(whole_data, HomographyModel, params_original)
+		whole_original_inliers = residuals < batch_group_params['ransac_params']['ransac_params']['residual_threshold']
+		n_true_inliers = np.sum(whole_original_inliers)
+		dataset_params['outlier_ratio'][i] = 1.0 - (n_true_inliers / whole_data.shape[0])
+
 		batch_id = f'batch_{initial_batch_id + i}'
 		batch_params = {
 			'batch_id' : batch_id,
