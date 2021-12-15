@@ -42,7 +42,8 @@ if __name__ == '__main__':
         estimation_errors = [] # estimation errors, depends on model_class
         abs_errors = []     # absolute and relative errors for each component of the parameters vector
         rel_errors = []	
-        iterations_list = []     # iterations of the iterative reestimation stage
+        main_loop_iters_list = []     # main loop iterations
+        refinement_iters_list = []     # refinement iterations
             
         for test_id in range(n_tests):
 
@@ -58,7 +59,8 @@ if __name__ == '__main__':
 
                 # additional information from estimation process
                 if estimator != 'default':
-                    iterations = np.loadtxt(f'{batch_save_path}/results/{estimator}/test_{test_id}_iterations.txt')
+                    main_loop_iters = np.loadtxt(f'{batch_save_path}/results/{estimator}/test_{test_id}_main_loop_iters.txt')
+                    refinement_iters = np.loadtxt(f'{batch_save_path}/results/{estimator}/test_{test_id}_refinement_iters.txt')
 
                 if model.__class__ == HomographyModel:
                     if real_dataset:
@@ -114,7 +116,8 @@ if __name__ == '__main__':
             abs_errors = np.append(abs_errors, abs_error)
             rel_errors = np.append(rel_errors, rel_error)
             # some additional info
-            if estimator != 'default': iterations_list = np.append(iterations_list, iterations)
+            if estimator != 'default': main_loop_iters_list = np.append(main_loop_iters_list, main_loop_iters)
+            if estimator != 'default': refinement_iters_list = np.append(refinement_iters_list, refinement_iters)
             
             finished_tests += 1
 
@@ -126,12 +129,14 @@ if __name__ == '__main__':
         estimation_errors = estimation_errors.reshape(n_successful_tests, -1)
         abs_errors = abs_errors.reshape(n_successful_tests, -1)
         rel_errors = rel_errors.reshape(n_successful_tests, -1)
-        if estimator != 'default': iterations_list = iterations_list.reshape(n_successful_tests, -1)
+        if estimator != 'default': main_loop_iters_list = main_loop_iters_list.reshape(n_successful_tests, -1)
+        if estimator != 'default': refinement_iters_list = refinement_iters_list.reshape(n_successful_tests, -1)
 
         np.savetxt(f'{batch_save_path}/results/{estimator}/00_estimation_errors.txt', estimation_errors)
         np.savetxt(f'{batch_save_path}/results/{estimator}/00_abs_errors.txt', abs_errors)
         np.savetxt(f'{batch_save_path}/results/{estimator}/00_rel_errors.txt', rel_errors)
-        if estimator != 'default': np.savetxt(f'{batch_save_path}/results/{estimator}/00_iterations.txt', iterations_list)
+        if estimator != 'default': np.savetxt(f'{batch_save_path}/results/{estimator}/00_main_loop_iters.txt', main_loop_iters_list)
+        if estimator != 'default': np.savetxt(f'{batch_save_path}/results/{estimator}/00_refinement_iters.txt', refinement_iters_list)
 
         finished_estimators += 1
     
