@@ -11,7 +11,7 @@ class RANSAC(object):
         self.stop_probability = stop_probability
         self.outlier_ratio = outlier_ratio
 
-    def _teoric_max_trials(self):
+    def _teoric_max_trials(self, outlier_ratio = None):
         """Determine number trials such that at least one outlier-free subset is
         sampled for the given inlier/outlier ratio.
         Parameters
@@ -21,7 +21,8 @@ class RANSAC(object):
         probability : float
             Probability (confidence) that one outlier-free sample is generated.
             Desired probability that we get a good sample
-        outlier_ratio : float
+        outlier_ratio : float (optional)
+            If provided then true/heuristic outlier_ratio placed in self.outlier_ratio is not used
         Returns
         -------
         trials : int
@@ -31,7 +32,11 @@ class RANSAC(object):
         if nom == 0:
             return np.inf
 
-        inlier_ratio = 1 - self.outlier_ratio
+        # in case outlier_ratio is not provided use true/heuristic outlier_ratio (i.e. self.outlier_ratio)
+        if outlier_ratio is None:
+            outlier_ratio = self.outlier_ratio
+
+        inlier_ratio = 1 - outlier_ratio
 
         denom = 1 - inlier_ratio ** self.min_samples
         if denom == 0:
@@ -78,8 +83,9 @@ class RANSAC(object):
         # random variable to choose minimal sample sets
         random_state = np.random.RandomState(seed)
         
-        teoric_max_trials = self._teoric_max_trials()
-        if self.max_trials > teoric_max_trials: self.max_trials = teoric_max_trials
+        # if usage of true/heuristic outlier_ratio (i.e. self.outlier_ratio) is forced then limit the number of trials if needed. Otherwise, comment the two following lines
+        #teoric_max_trials = self._teoric_max_trials()
+        #if self.max_trials > teoric_max_trials: self.max_trials = teoric_max_trials
 
         if not isinstance(data, (tuple, list)):
                 data = (data, )
@@ -128,10 +134,12 @@ class RANSAC(object):
                 best_inliers = sample_model_inliers
                 best_residuals = sample_model_residuals
 
-                #dynamic_max_trials = _max_trials(np.sum(best_inliers), num_samples, min_samples, stop_probability)
-                #if num_trials >= dynamic_max_trials:
-                #	break
-        
+                dynamic_max_trials = self._teoric_max_trials(outlier_ratio = 1 - (np.sum(best_inliers) / num_samples))
+                if num_trials >= dynamic_max_trials:
+                	break
+
+        main_loop_iters = num_trials
+
         #np.savetxt(f'/home/esau/tfm/slides/mss/G{self.max_trials}.txt',*samples)
         #return sample_model, sample_model_inliers, sample_model_scores, 0
         
@@ -140,16 +148,17 @@ class RANSAC(object):
             best_model = None
             best_inliers = None
             best_scores = None
-            return best_model, best_inliers, best_scores, num_trials
+            refinement_iters = 0
+            return best_model, best_inliers, best_scores, main_loop_iters, refinement_iters
 
         # estimate final model using all inliers
         if best_inliers is not None:
-            # select inliers for each data array (variant_1 and ransac)
+            refinement_iters = 1
             data_inliers = [d[best_inliers] for d in data]
             best_model.estimate(*data_inliers)
 
         #best_residuals = best_model.residuals(*data)
-        return best_model, best_inliers, best_scores, 0
+        return best_model, best_inliers, best_scores, main_loop_iters, refinement_iters
 
 class MSAC(RANSAC):
     def _loss_function(self, residuals):
@@ -257,8 +266,9 @@ class FMR(RANSAC):
         # random variable to choose minimal sample sets
         random_state = np.random.RandomState(seed)
         
-        teoric_max_trials = self._teoric_max_trials()
-        if self.max_trials > teoric_max_trials: self.max_trials = teoric_max_trials
+        # if usage of true/heuristic outlier_ratio (i.e. self.outlier_ratio) is forced then limit the number of trials if needed. Otherwise, comment the two following lines
+        #teoric_max_trials = self._teoric_max_trials()
+        #if self.max_trials > teoric_max_trials: self.max_trials = teoric_max_trials
 
         if not isinstance(data, (tuple, list)):
                 data = (data, )
@@ -318,10 +328,12 @@ class FMR(RANSAC):
                 best_inliers = sample_model_inliers
                 best_residuals = sample_model_residuals
 
-                #dynamic_max_trials = _max_trials(np.sum(best_inliers), num_samples, min_samples, stop_probability)
-                #if num_trials >= dynamic_max_trials:
-                #	break
+                dynamic_max_trials = self._teoric_max_trials(outlier_ratio = 1 - (np.sum(best_inliers) / num_samples))
+                if num_trials >= dynamic_max_trials:
+                	break
         
+        main_loop_iters = num_trials
+
         #np.savetxt(f'/home/esau/tfm/slides/mss/{self.__class__.__name__}{self.variant}_{self.fuzzy_metric.__class__.__name__}/G{self.max_trials}.txt',*samples)
         #return sample_model, sample_model_inliers, sample_model_scores, 0
         
@@ -330,13 +342,13 @@ class FMR(RANSAC):
             best_model = None
             best_inliers = None
             best_scores = None
-            improvements = None
-            return best_model, best_inliers, best_scores, improvements
+            refinement_iters = 0
+            return best_model, best_inliers, best_scores, main_loop_iters, refinement_iters
 
         # estimate final model using all inliers
         weights = np.copy(best_scores)
         if best_inliers is not None and self.t_max == 1:
-            iterations = 1
+            refinement_iters = 1
             if self.variant == 1:
                 # select inliers
                 data_inliers = [d[best_inliers] for d in data]
@@ -355,15 +367,15 @@ class FMR(RANSAC):
 
         # iterative reestimation with at most t_max iterations
         elif best_inliers is not None and self.t_max > 1:
-            iterations = 0
+            refinement_iters = 0
             if self.variant in [2, 3]:
                 # best_inliers as argument for first iteration
-                best_model, best_scores, iterations = self._iterative_reestimation( data, model_class, best_model, weights, 
+                best_model, best_scores, refinement_iters = self._iterative_reestimation( data, model_class, best_model, weights, 
                                                                                     best_inliers = best_inliers, iterations = 0)
             elif self.variant == 4:
                 # best_inliers are not specified because whole dataset is used
-                best_model, best_scores, iterations = self._iterative_reestimation( data, model_class, best_model, 
+                best_model, best_scores, refinement_iters = self._iterative_reestimation( data, model_class, best_model, 
                                                                                     weights, iterations = 0)                
         # update best model scores
         best_scores = self._score_function(np.abs(best_model.residuals(*data)))
-        return best_model, best_inliers, best_scores, iterations
+        return best_model, best_inliers, best_scores, main_loop_iters, refinement_iters

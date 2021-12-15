@@ -123,11 +123,12 @@ if __name__ == '__main__':
                 np.savetxt(f'{batch_save_path}/results/{estimator_name}/test_{test_id}_residuals.txt', model_residuals)
             else:
                 # robustly fit line only using inlier data (robust model)
-                model, inliers, scores, iterations = estimator.run(data, model_class, seed = test_id)
+                model, inliers, scores, main_loop_iters, refinement_iters = estimator.run(data, model_class, seed = test_id)
                 if model is not None:
                     np.savetxt(f'{batch_save_path}/results/{estimator_name}/test_{test_id}_inliers.txt', inliers)
                     np.savetxt(f'{batch_save_path}/results/{estimator_name}/test_{test_id}_params.txt', model.params)
-                    np.savetxt(f'{batch_save_path}/results/{estimator_name}/test_{test_id}_iterations.txt', np.array([iterations]))
+                    np.savetxt(f'{batch_save_path}/results/{estimator_name}/test_{test_id}_main_loop_iters.txt', np.array([main_loop_iters]))
+                    np.savetxt(f'{batch_save_path}/results/{estimator_name}/test_{test_id}_refinement_iters.txt', np.array([refinement_iters]))
                     np.savetxt(f'{batch_save_path}/results/{estimator_name}/test_{test_id}_scores.txt', scores)
                     model_residuals = model.residuals(data)
                     np.savetxt(f'{batch_save_path}/results/{estimator_name}/test_{test_id}_residuals.txt', model_residuals)
