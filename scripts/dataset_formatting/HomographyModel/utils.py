@@ -10,6 +10,7 @@ def read_validation(img_path_header, figure_label, as_keypoints = False):
         .mat file (kp1 = M·kp2) 
         used for 'homogr' dataset found in http://cmp.felk.cvut.cz/data/geometry2view/index.xhtml
     """
+    # ground truth and manually selected inliers
     mat = scipy.io.loadmat(f'{img_path_header}/{figure_label}_vpts.mat')
     kp1 = mat['validation'][0][0][0][:3].T
     kp2 = mat['validation'][0][0][0][3:].T
@@ -17,7 +18,17 @@ def read_validation(img_path_header, figure_label, as_keypoints = False):
     if as_keypoints:
         kp1 = convert_pts_to_keypoints(kp1)
         kp2 = convert_pts_to_keypoints(kp2)
-    return kp1, kp2, M
+
+    # correspondences
+    mat = scipy.io.loadmat(f'{img_path_header}/homogr.mat')
+    n_figures = mat['results'][0][0][0][0].shape[0]
+    idx = None
+    for i in range(n_figures):
+        if mat['results'][0][0][0][0][i][0][0][0] == figure_label:
+            idx = i
+    src_pts = mat['results'][0][0][3][0][idx][:2].T
+    dst_pts = mat['results'][0][0][3][0][idx][3:5].T
+    return kp1, kp2, src_pts, dst_pts, M
 
 def show_matches(img1,kp1,img2,kp2,matches, save_figure = False, figure_label = None):
     draw_params = dict(matchColor = (0,255,0), # draw matches in green color
