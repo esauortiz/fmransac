@@ -42,7 +42,7 @@ def main():
     residual_threshold = batch_group_params['ransac_params']['residual_threshold']
 
     # build results as data frame
-    data = np.empty((n_batches, n_estimators + 1))
+    data = np.empty((n_batches, n_estimators + 2))
     row_labels = []
 
     for batch_id in reversed(range(n_batches)):
@@ -70,10 +70,11 @@ def main():
         whole_original_inliers = residuals < residual_threshold
         n_true_inliers = np.sum(whole_original_inliers)
         batch_row.append(n_true_inliers)
+        batch_row.append(1 - (n_true_inliers / whole_data.shape[0]))
 
         data[-(batch_id + 1)] = batch_row # -(batch_id + 1) because reversed
 
-    results_df = pd.DataFrame(data, index=row_labels, columns=[*estimators_names, 'n_true_inliers'])
+    results_df = pd.DataFrame(data, index=row_labels, columns=[*estimators_names, 'inlier_ratio', 'n_true_inliers'])
     
     # save table
     print(results_df)
