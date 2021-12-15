@@ -69,8 +69,8 @@ def main():
         residuals = get_residuals(whole_data, HomographyModel, params_original)
         whole_original_inliers = residuals < residual_threshold
         n_true_inliers = np.sum(whole_original_inliers)
-        batch_row.append(n_true_inliers)
         batch_row.append(1 - (n_true_inliers / whole_data.shape[0]))
+        batch_row.append(n_true_inliers)
 
         data[-(batch_id + 1)] = batch_row # -(batch_id + 1) because reversed
 
