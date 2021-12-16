@@ -42,7 +42,9 @@ def main():
     residual_threshold = batch_group_params['ransac_params']['residual_threshold']
 
     # build results as data frame
-    data = np.empty((n_batches, n_estimators + 2))
+    additional_columns = ['inlier_ratio', 'n_true_inliers']
+    n_additional_columns = len(additional_columns)
+    data = np.empty((n_batches, n_estimators + n_additional_columns))
     row_labels = []
 
     for batch_id in reversed(range(n_batches)):
@@ -60,7 +62,9 @@ def main():
             results = np.loadtxt(f'{batch_save_path}/results/{estimator}/00_{metric}.txt')
             metric_value = get_metric(results, stat_type)
             batch_row.append(metric_value)
-        
+
+        # appending additional columns
+
         # number of inliers in data generated with images + features detector + features matching
         params_original = np.loadtxt(f'{batch_save_path}/tests_params/original_params.txt')
         whole_data2 = np.loadtxt(f'{batch_save_path}/datasets/dst_pts.txt')
@@ -74,7 +78,7 @@ def main():
 
         data[-(batch_id + 1)] = batch_row # -(batch_id + 1) because reversed
 
-    results_df = pd.DataFrame(data, index=row_labels, columns=[*estimators_names, 'inlier_ratio', 'n_true_inliers'])
+    results_df = pd.DataFrame(data, index=row_labels, columns=[*estimators_names, *additional_columns])
     
     # save table
     print(results_df)
