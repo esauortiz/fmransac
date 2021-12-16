@@ -328,7 +328,8 @@ class FMR(RANSAC):
                 best_inliers = sample_model_inliers
                 best_residuals = sample_model_residuals
 
-                dynamic_max_trials = self._teoric_max_trials(outlier_ratio = 1 - (np.sum(best_inliers) / num_samples))
+                # dynamic max trials considering inliers samples with score != 0
+                dynamic_max_trials = self._teoric_max_trials(outlier_ratio = 1 - (np.sum(best_scores != 0) / num_samples))
                 if num_trials >= dynamic_max_trials:
                 	break
         
