@@ -83,9 +83,10 @@ class RANSAC(object):
         # random variable to choose minimal sample sets
         random_state = np.random.RandomState(seed)
         
-        # if usage of true/heuristic outlier_ratio (i.e. self.outlier_ratio) is forced then limit the number of trials if needed. Otherwise, comment the two following lines
-        #teoric_max_trials = self._teoric_max_trials()
-        #if self.max_trials > teoric_max_trials: self.max_trials = teoric_max_trials
+        # if usage of true/heuristic outlier_ratio (i.e. self.outlier_ratio) is forced then limit the number of trials if needed
+        if self.outlier_ratio is not None:
+            teoric_max_trials = self._teoric_max_trials()
+            if self.max_trials > teoric_max_trials: self.max_trials = teoric_max_trials
 
         if not isinstance(data, (tuple, list)):
                 data = (data, )
@@ -134,9 +135,11 @@ class RANSAC(object):
                 best_inliers = sample_model_inliers
                 best_residuals = sample_model_residuals
 
-                dynamic_max_trials = self._teoric_max_trials(outlier_ratio = 1 - (np.sum(best_inliers) / num_samples))
-                if num_trials >= dynamic_max_trials:
-                	break
+                # dynamic max trials computing if no outlier_ratio is provided
+                if self.outlier_ratio is None:
+                    dynamic_max_trials = self._teoric_max_trials(outlier_ratio = 1 - (np.sum(best_inliers) / num_samples))
+                    if num_trials >= dynamic_max_trials:
+                        break
 
         main_loop_iters = num_trials
 
@@ -266,9 +269,10 @@ class FMR(RANSAC):
         # random variable to choose minimal sample sets
         random_state = np.random.RandomState(seed)
         
-        # if usage of true/heuristic outlier_ratio (i.e. self.outlier_ratio) is forced then limit the number of trials if needed. Otherwise, comment the two following lines
-        #teoric_max_trials = self._teoric_max_trials()
-        #if self.max_trials > teoric_max_trials: self.max_trials = teoric_max_trials
+        # if usage of true/heuristic outlier_ratio (i.e. self.outlier_ratio) is forced then limit the number of trials if needed
+        if self.outlier_ratio is not None:
+            teoric_max_trials = self._teoric_max_trials()
+            if self.max_trials > teoric_max_trials: self.max_trials = teoric_max_trials
 
         if not isinstance(data, (tuple, list)):
                 data = (data, )
@@ -328,11 +332,13 @@ class FMR(RANSAC):
                 best_inliers = sample_model_inliers
                 best_residuals = sample_model_residuals
 
-                # dynamic max trials considering inliers samples with score != 0
-                # another option is consider inliers sum as scores sum
-                dynamic_max_trials = self._teoric_max_trials(outlier_ratio = 1 - (np.sum(best_scores) / num_samples))
-                if num_trials >= dynamic_max_trials:
-                	break
+                # dynamic max trials computing if no outlier_ratio is provided
+                if self.outlier_ratio is None:
+                    # dynamic max trials considering inliers samples with score != 0
+                    # another option is consider inliers sum as scores sum
+                    dynamic_max_trials = self._teoric_max_trials(outlier_ratio = 1 - (np.sum(best_scores) / num_samples))
+                    if num_trials >= dynamic_max_trials:
+                        break
         
         main_loop_iters = num_trials
 
