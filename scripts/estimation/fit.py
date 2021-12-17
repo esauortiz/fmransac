@@ -1288,11 +1288,10 @@ class HomographyModel(BaseModel):
         N, dim = data.shape
         ones = np.ones((N, dim+1))
         ones[:,:-1] = data
-        data = np.dot(self.H, ones.T)
+        data = np.dot(self.params, ones.T)
         for row in data:
             row /= data[-1]
-            print(np.sum(row))
-        return data[:,:-1].T
+        return data.T
 
     def get_general_params(self, params = None):
         if params is not None: self.params = params
