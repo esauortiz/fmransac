@@ -78,7 +78,7 @@ class RANSAC(object):
         best_inliers = np.zeros((np.shape(data)[0],), dtype = bool)
         best_residuals = np.zeros((np.shape(data)[0],), dtype = float)
         best_scores = np.ones((np.shape(data)[0],), dtype = float) * np.inf
-        seed = int(seed)
+        if seed is not None: seed = int(seed)
 
         # random variable to choose minimal sample sets
         random_state = np.random.RandomState(seed)
@@ -260,7 +260,7 @@ class FMR(RANSAC):
         best_inliers = np.zeros((np.shape(data)[0],), dtype = bool)
         best_residuals = np.zeros((np.shape(data)[0],), dtype = float)
         best_scores = np.zeros((np.shape(data)[0],), dtype = float)
-        seed = int(seed)
+        if seed is not None: seed = int(seed)
 
         if self.variant == 4:
             # all points are considered inliers
