@@ -26,9 +26,13 @@ if __name__ == '__main__':
 
 	# dataset params
 	dataset_params = batch_group_params['dataset_params']
+	try:
+		using_real_dataset = dataset_params['real_dataset']
+	except KeyError:
+		using_real_dataset = False
 		# all params in dataset_params as list, repeating values if a single values instead of a list is provided
 		# i.e. if min_samples = 3 it will be converted to min_samples = np.repeat(3, n_batches).tolist()
-	if not dataset_params['real_dataset']:
+	if not using_real_dataset:
 		for key in dataset_params:
 			if not isinstance(dataset_params[key], list) and key not in ['noise_dim', 'real_dataset']:
 				param_list = []
@@ -66,7 +70,7 @@ if __name__ == '__main__':
 
 		# if kappa != 0 then thereshold values will be computed 
 		# based on dataset standard deviation (sd)
-	if ransac_params['residual_kappa'][0] != 0 and not dataset_params['real_dataset']:
+	if ransac_params['residual_kappa'][0] != 0 and not using_real_dataset:
 		threshold = []
 		print('    Thereshold values will be computed based on dataset `standard deviation` and `kappa` multiplier')
 		for kappa, sd in zip(ransac_params['residual_kappa'], dataset_params['sd']):
@@ -75,7 +79,7 @@ if __name__ == '__main__':
 
 		# if inlier_prob != 0 then thereshold values will be computed 
 		# assuming a chi2 distribution of the fitting errors
-	if ransac_params['inlier_prob'][0] != 0 and not dataset_params['real_dataset']:
+	if ransac_params['inlier_prob'][0] != 0 and not using_real_dataset:
 		threshold = []
 		print('    Thereshold values will be computed assuming a chi2 distribution of the fitting errors')
 		for inlier_prob, df, sd in zip(ransac_params['inlier_prob'], ransac_params['df'], dataset_params['sd']):
@@ -120,7 +124,7 @@ if __name__ == '__main__':
 			}
 		}
 		# if synthetic data is generated place in 'dataset_params' key its description
-		if not dataset_params['real_dataset']:
+		if not using_real_dataset:
 			batch_params['dataset_params'] = {
 				'model_bbox' 	: dataset_params['model_bbox'][i],
 				'dataset_bbox' 	: dataset_params['dataset_bbox'][i],
