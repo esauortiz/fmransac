@@ -14,18 +14,22 @@ def main(model_class, group_id, batch_id_as_string = None):
     n_batches = batch_group_params['group_params']['n_batches']
 
     # tests configuration
-    #os.system(f'python  {current_path}/test_configuration/create_directories.py {model_class} {group_id}')
+    os.system(f'python  {current_path}/test_configuration/create_directories.py {model_class} {group_id}')
     os.system(f'python  {current_path}/test_configuration/set_batches_params.py {model_class} {group_id}')
     os.system(f'python  {current_path}/test_configuration/set_tests_params.py {model_class} {group_id}') 
 
     # dataset generation
-    if batch_group_params['dataset_params']['real_dataset']:
-        print('[*] Formatting data ...')
-        os.system(f'python  {current_path}/dataset_formatting/HomographyModel/main.py homogr {group_id}')
-        print('[*] Skipping dataset generation ...')
-    else:
-        print('[*] Generating datasets ...')
-        for batch_id in range(n_batches): os.system(f'python  {current_path}/dataset_generation/main.py {model_class} batch_{initial_batch_id + batch_id}')
+    try: # handling batch group params without 'real_dataset' key
+        if batch_group_params['dataset_params']['real_dataset']:
+            print('[*] Formatting data ...')
+            os.system(f'python  {current_path}/dataset_formatting/HomographyModel/main.py homogr {group_id}')
+            print('[*] Skipping dataset generation ...')
+        else:
+            print('[*] Generating datasets ...')
+            for batch_id in range(n_batches): os.system(f'python  {current_path}/dataset_generation/main.py {model_class} batch_{initial_batch_id + batch_id}')
+    except KeyError:
+            print('[*] Generating datasets ...')
+            for batch_id in range(n_batches): os.system(f'python  {current_path}/dataset_generation/main.py {model_class} batch_{initial_batch_id + batch_id}')    
 
     if batch_id_as_string is not None:
         # estimation
