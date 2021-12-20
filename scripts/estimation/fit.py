@@ -352,7 +352,8 @@ class PlaneModelND(BaseModel):
                 return Y.T
 
         dim = np.size(normal_vector)
-        np.random.seed(int(seed))
+        if seed is not None: seed = int(seed)
+        np.random.seed(seed)
         # build hyperplane subspace (based on Gram-Schmidt)
         v = gs(np.array([normal_vector, *(np.random.rand(dim - 1, dim))]))
         subspace = v[1:dim,]
