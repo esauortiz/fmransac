@@ -9,7 +9,7 @@ if __name__ == '__main__':
     
     # read data
     data = np.loadtxt('2d_line_data.txt')
-    ground_truth_params = [[0.0, 0.0], [-0.32665296,  0.94514435]]
+    ground_truth_params = [[0.0, 0.0], [-0.32665296,  0.94514435]] # [[origin_x, origin_y], [n_x, n_y]] where `n` is normal vector to the 2D line
     true_outlier_ratio = 0.4
 
     # model objects
