@@ -5,8 +5,8 @@ from estimation.utils import _check_data_dim, _check_data_atleast_2D, _norm_alon
 from dataset_generation.utils import _is_in_bbox
 
 import math
-import torch
-import kornia
+#import torch
+#import kornia
 import numpy as np
 
 
@@ -1228,7 +1228,10 @@ class HomographyModel(BaseModel):
             raise RuntimeError('number of points or cardinality do not match')
         if src_pts.shape[0] + dst_pts.shape[0] < 4:
             raise ValueError(f'At least 4 corresponding points are needed - src_pts.shape: {src_pts.shape} - dst_pts.shape: {dst_pts.shape}')
-            
+        
+        # The following commented block is to prevent torch and kornia import
+        # please if using 
+        """
         # estimation based on Kornia implementation
         src_pts = torch.from_numpy(src_pts.reshape(1,*src_pts.shape))
         dst_pts = torch.from_numpy(dst_pts.reshape(1,*dst_pts.shape))
@@ -1239,6 +1242,8 @@ class HomographyModel(BaseModel):
         H_est =  kornia.geometry.homography.find_homography_dlt(src_pts, dst_pts, w) # shape (1, 3, 3)
         H_est = H_est.cpu().detach().numpy()
         self.params = H_est[0]
+        """
+        raise ImportError(f'Homography could not be estimated\nPlease install and import torch and torch. Additionally, uncomment code block placed in HomographyModel.estimate')
 
         return True
 
