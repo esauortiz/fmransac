@@ -1,6 +1,6 @@
 ## Basic estimation example
 
-This example performs 2D line estimations with TLS, RANSAC and FM-Based RANSAC variant (4th variant with fuzzy metric M2). Results are prompted with ```[origin, normal_vector]``` format. Moreover, estimated 2D lines are plotted alongside the ground truth line and the 2D source points. A successful execution of the ```example.py``` script should generate the following figure (although the result may vary because of different sequence of minimal sample sets which have been selected.)
+This example performs 2D line estimations with TLS, RANSAC and FM-Based RANSAC variant (4th variant with fuzzy metric M2). Results are prompted with ```[origin, normal_vector]``` format. Moreover, estimated 2D lines are plotted alongside the ground truth line and the 2D source points. A successful execution of the ```example.py``` script should generate the following figure (although the result may vary because of different sequence of minimal sample sets which have been selected):
 
 ![](https://github.com/esauortiz/fmransac/blob/master/example/fig/example.png)
 
