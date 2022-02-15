@@ -76,5 +76,5 @@ Note that:
 
 * The noise magnitude of the inliers (sigma) and the outlier ratio (omega) of the generated datasets are 1.0 and 0.4, respectively.
 * Ground truth is plotted as grey lines and estimation as black lines.
-* Inliers/Outliers for RANSAC anc MSAC are plotted in blue/red.
-* The degree of compatibility is shown with a grey scale, the more dark the higher the compatibility.
+* Inliers/Outliers for RANSAC and MSAC are plotted in blue/red.
+* The degree of compatibility is shown with a grey scale, the darker the higher the compatibility.
