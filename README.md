@@ -68,7 +68,7 @@ Not configuring neither **tests batch group** nor **model class**, running estim
 
 showing that FM-based RANSAC is better at straight 2D line estimation in terms of accuracy with any outlier ratio between 0.2 and 0.6.
 
-A visual representation of how our algorithm enhances estimation accuracy compared to RANSAC and MSAC is shown in the following figure, where the best (a) and worst (b) estimation with FMR4_M2 compared against MSAC are plotted.
+A visual representation of how our algorithm enhances estimation accuracy compared to RANSAC and MSAC is shown in the following figure, where the best (a) and worst (b) estimations (out of 500 estimations) with FMR4_M2 compared against MSAC are plotted.
 
 ![](https://github.com/esauortiz/fmransac/blob/master/doc/fig/ransac_msac_vs_fmr4.png)
 
