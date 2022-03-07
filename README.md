@@ -9,7 +9,7 @@ A. Ortiz, E. Ortiz, J. J. Miñana, and Ó. Valero, [“On the Use of Fuzzy Metri
 
 A. Ortiz, E. Ortiz, J. J. Miñana, and Ó. Valero, [“Hypothesis Scoring and Model Refinement Strategies for FM-Based RANSAC,”](https://doi.org/10.1007/978-3-030-85713-4_10) Advances in Artificial Intelligence. Springer International Publishing, pp. 96–105, 2021.
 
-J. J. Miñana, A. Ortiz, Esaú Ortiz, and Ó. Valero, [“On the standard fuzzy metric: generalizations and application to model estimation,”](https://doi.org/10.5281/zenodo.4964783) Jun. 2021.
+J. J. Miñana, A. Ortiz, E. Ortiz, and Ó. Valero, [“On the standard fuzzy metric: generalizations and application to model estimation,”](https://doi.org/10.5281/zenodo.4964783) Jun. 2021.
 
 ## Description
 This python package includes modules to:
